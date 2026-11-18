@@ -4,6 +4,7 @@
 import React from "react";
 import {
   IconHome,
+  IconPackage,
   IconArrowDownRight,
   IconArrowUpRight,
   IconCalendar,
@@ -21,6 +22,12 @@ export const dashboardNavItems = [
     icon: <IconHome className="h-full w-full" />,
     href: "/dashboard",
     match: "exact" as const,
+  },
+
+  {
+    title: "ကုန်ပစ္စည်း",
+    icon: <IconPackage className="h-full w-full" />,
+    href: "/dashboard/products",
   },
 
   {
