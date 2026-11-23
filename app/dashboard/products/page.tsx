@@ -1,3 +1,6 @@
+import CategoryUnitFields from "./category-unit-fields";
+import { Types } from "mongoose";
+import Category from "@/lib/mongoDB/models/category";
 import Link from "next/link";
 import { inventoryMovements } from "@/lib/mongoDB/inventory";
 import ProductsTable from "@/components/dashboard/products/ProductsTable";
@@ -18,7 +21,6 @@ import Product from "@/lib/mongoDB/models/product";
 const fields = [
   { name: "name", label: "ပစ္စည်းအမည်", maxLength: 120 },
   { name: "code", label: "ပစ္စည်းကုဒ်", maxLength: 40 },
-  { name: "unit", label: "ယူနစ်", maxLength: 30 },
   { name: "openingQuantity", label: "စတင်လက်ကျန် အရေအတွက်", inputMode: "decimal" },
   { name: "openingPurchaseTotal", label: "မူလ စုစုပေါင်းဝယ်ဖိုး (ကျပ်)", inputMode: "numeric" },
   { name: "sellingPrice", label: "ပုံမှန်ရောင်းဈေး (ကျပ်)", inputMode: "numeric" },
@@ -58,6 +60,7 @@ async function addProduct(form: FormData) {
   const ownerId = await getOwnerId();
   const code = String(form.get("code") ?? "").trim().toUpperCase();
   const name = String(form.get("name") ?? "").trim();
+  const categoryId = String(form.get("categoryId") ?? "");
   const unit = String(form.get("unit") ?? "").trim();
   const openingQuantity = readNumber(form, "openingQuantity", 3);
   const openingPurchaseTotal = readNumber(form, "openingPurchaseTotal");
@@ -74,8 +77,12 @@ async function addProduct(form: FormData) {
   let status: keyof typeof messages = "saved";
   try {
     await connectToDB();
-    await Product.init();
-    await Product.create({ ownerId, code, name, unit, openingQuantity, openingPurchaseTotal, unitCost, sellingPrice });
+    if (categoryId && (!Types.ObjectId.isValid(categoryId) || !await Category.exists({ ownerId, _id: categoryId }))) {
+      status = "invalid";
+    } else {
+      await Product.init();
+      await Product.create({ ownerId, code, name, unit, categoryId: categoryId || null, openingQuantity, openingPurchaseTotal, unitCost, sellingPrice });
+    }
   } catch (error) {
     status = typeof error === "object" && error !== null &&
       "code" in error && error.code === 11000 ? "duplicate" : "failed";
@@ -92,10 +99,12 @@ export default async function ProductsPage({
   const ownerId = await getOwnerId();
   const { status } = await searchParams;
   await connectToDB();
-  const [products, movements] = await Promise.all([
+  const [products, movements, categories] = await Promise.all([
     Product.find({ ownerId, archivedAt: null }).sort({ name: 1, code: 1 }).lean(),
     inventoryMovements(ownerId),
+    Category.find({ ownerId }).sort({ name: 1 }).lean(),
   ]);
+  const categoryNames = new Map(categories.map(({ _id, name }) => [String(_id), name]));
   const message = status && Object.hasOwn(messages, status)
     ? messages[status as keyof typeof messages]
     : null;
@@ -126,6 +135,7 @@ export default async function ProductsPage({
             <Button variant="outline" asChild>
               <Link href="/dashboard/sales/new">ရောင်းစာရင်းအသစ်</Link>
             </Button>
+            <Button variant="outline" asChild><Link href="/dashboard/categories">အမျိုးအစား</Link></Button>
             <Dialog key={status ?? "new"}>
               <DialogTrigger asChild>
                 <Button className={blueButton}>
@@ -139,6 +149,9 @@ export default async function ProductsPage({
                 </DialogHeader>
                 <form action={addProduct} className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
+                    <CategoryUnitFields categories={categories.map(({ _id, name, unit }) => ({
+                      id: String(_id), name, unit: unit ?? "",
+                    }))} />
                     {fields.map((field) => (
                       <label key={field.name} className="grid gap-2 text-sm">
                         <span>{field.label}</span>
@@ -175,6 +188,7 @@ export default async function ProductsPage({
           <ProductsTable rows={products.map((product) => ({
             id: String(product._id),
             name: product.name,
+            category: categoryNames.get(String(product.categoryId)) ?? "",
             code: product.code,
             unit: product.unit,
             openingQuantity: product.openingQuantity,

@@ -1,248 +1,93 @@
-// import { Types } from "mongoose";
-// import { revalidatePath } from "next/cache";
-// import { headers } from "next/headers";
-// import Link from "next/link";
-// import { redirect } from "next/navigation";
-// import { BreadCrumbItem } from "@/components/dashboard/outcome/bread-crumb-item";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { auth } from "@/lib/auth";
-// import { connectToDB } from "@/lib/mongoDB/mongoDB";
-// import Product from "@/lib/mongoDB/models/product";
-// import Purchase from "@/lib/mongoDB/models/purchase";
-// import { purchaseAmount, readNumber } from "@/components/product/amount";
-// import PurchaseForm from "@/components/product/purchase-form";
-
-// const path = "/dashboard/purchases/new";
-
-// async function getOwnerId() {
-//   const session = await auth.api.getSession({ headers: await headers() });
-//   if (!session?.user.id) redirect("/sign-in");
-//   return session.user.id;
-// }
-
-// async function savePurchase(form: FormData): Promise<string> {
-//   "use server";
-
-//   const ownerId = await getOwnerId();
-//   const requestId = String(form.get("requestId") ?? "");
-//   const date = String(form.get("date") ?? "");
-//   const supplier = String(form.get("supplier") ?? "").trim();
-//   const timestamp = Date.parse(date);
-//   if (!Types.ObjectId.isValid(requestId) || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-//       !Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== date ||
-//       !supplier || supplier.length > 120) return "ဝယ်ယူရက်နဲ့ ဆိုင်အမည်ကို စစ်ပါ။";
-
-//   const ids = form.getAll("productId").map(String);
-//   const quantities = form.getAll("quantity").map(String);
-//   const costs = form.getAll("unitCost").map(String);
-//   if (ids.length < 1 || ids.length > 100 || ids.length !== quantities.length ||
-//       ids.length !== costs.length || ids.some((id) => !Types.ObjectId.isValid(id))) {
-//     return "ပစ္စည်းစာရင်းကို စစ်ပါ။";
-//   }
-
-//   try {
-//     await connectToDB();
-//     const products = await Product.find({ ownerId, _id: { $in: ids } }).lean();
-//     const byId = new Map(products.map((product) => [String(product._id), product]));
-//     const items = ids.map((id, index) => {
-//       const product = byId.get(id);
-//       const amount = purchaseAmount(quantities[index], costs[index]);
-//       if (!product || !Number.isFinite(amount)) return null;
-//       return {
-//         productId: product._id,
-//         name: product.name,
-//         unit: product.unit,
-//         quantity: readNumber(quantities[index], 3),
-//         unitCost: readNumber(costs[index], 0),
-//         amount,
-//       };
-//     });
-//     if (items.some((item) => item === null)) return "ပစ္စည်း၊ အရေအတွက်နဲ့ ဈေးနှုန်းကို စစ်ပါ။";
-//     const total = items.reduce((sum, item) => sum + (item?.amount ?? 0), 0);
-//     if (!Number.isSafeInteger(total)) return "စုစုပေါင်းငွေပမာဏ ကြီးလွန်းနေပါတယ်။";
-
-//     await Purchase.updateOne(
-//       { _id: requestId, ownerId },
-//       { $setOnInsert: { ownerId, date, supplier, items, total } },
-//       { upsert: true, runValidators: true },
-//     );
-//   } catch (error) {
-//     console.error("Could not save purchase", error);
-//     return "ဝယ်စာရင်းကို သိမ်းလို့မရသေးပါ။ ပြန်စမ်းကြည့်ပါ။";
-//   }
-
-//   revalidatePath("/dashboard/products");
-//   redirect(path + "?saved=" + requestId);
-// }
-
-// export default async function NewPurchasePage({
-//   searchParams,
-// }: {
-//   searchParams: Promise<{ saved?: string }>;
-// }) {
-//   const ownerId = await getOwnerId();
-//   const { saved } = await searchParams;
-//   await connectToDB();
-//   const products = await Product.find({ ownerId }).sort({ name: 1 }).lean();
-//   const receipt = saved && Types.ObjectId.isValid(saved)
-//     ? await Purchase.findOne({ ownerId, _id: saved }).lean()
-//     : null;
-//   const date = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Yangon" }).format(new Date());
-
-//   return (
-//     <div className="space-y-4">
-//       <BreadCrumbItem />
-//       <Card className="ring-1 ring-blue-500/15">
-//         <CardHeader className="rounded-t-xl bg-blue-50 dark:bg-blue-950/40">
-//           <CardTitle><h1>ဝယ်စာရင်းအသစ်</h1></CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           {receipt && <p role="status" className="text-blue-700 dark:text-blue-300">
-//             ဝယ်စာရင်းသိမ်းပြီးပါပြီ။ စုစုပေါင်း {receipt.total.toLocaleString("en-US")} ကျပ်
-//           </p>}
-//           {products.length ? (
-//             <PurchaseForm
-//               key={saved ?? "new"}
-//               requestId={new Types.ObjectId().toHexString()}
-//               date={date}
-//               save={savePurchase}
-//               products={products.map(({ _id, name, code, unit, unitCost }) => ({
-//                 id: String(_id), name, code, unit, unitCost,
-//               }))}
-//             />
-//           ) : (
-//             <Link className="text-blue-600 underline" href="/dashboard/products">
-//               ကုန်ပစ္စည်းစာရင်းမှာ ပစ္စည်းအရင်ထည့်ပါ
-//             </Link>
-//           )}
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-import { Types } from "mongoose";
-import { revalidatePath } from "next/cache";
+import { Plus, RefreshCw } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BreadCrumbItem } from "@/components/dashboard/outcome/bread-crumb-item";
+import PurchasesTable from "@/components/dashboard/purchases/PurchasesTable";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
-import { connectToDB } from "@/lib/mongoDB/mongoDB";
-import Product from "@/lib/mongoDB/models/product";
+import { formatKyat } from "@/lib/format-kyat";
+import Category from "@/lib/mongoDB/models/category";
 import Purchase from "@/lib/mongoDB/models/purchase";
-import { purchaseAmount, readNumber } from "@/components/product/amount";
-import PurchaseForm from "@/components/product/purchase-form";
+import { connectToDB } from "@/lib/mongoDB/mongoDB";
 
-const path = "/dashboard/purchases/new";
+const cardStyle = "relative isolate overflow-hidden border-0 bg-gradient-to-br from-blue-50/70 via-background to-muted/20 shadow-lg ring-1 ring-black/5 dark:from-blue-950/40 dark:ring-white/10";
 
-async function getOwnerId() {
+export default async function PurchasesPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
-  return session.user.id;
-}
 
-async function savePurchase(form: FormData): Promise<string> {
-  "use server";
-
-  const ownerId = await getOwnerId();
-  const requestId = String(form.get("requestId") ?? "");
-  const date = String(form.get("date") ?? "");
-  const supplier = String(form.get("supplier") ?? "").trim();
-  const timestamp = Date.parse(date);
-  if (!Types.ObjectId.isValid(requestId) || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-      !Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== date ||
-      !supplier || supplier.length > 120) return "ဝယ်ယူရက်နဲ့ ဆိုင်အမည်ကို စစ်ပါ။";
-
-  const ids = form.getAll("productId").map(String);
-  const quantities = form.getAll("quantity").map(String);
-  const costs = form.getAll("unitCost").map(String);
-  if (ids.length < 1 || ids.length > 100 || ids.length !== quantities.length ||
-      ids.length !== costs.length || ids.some((id) => !Types.ObjectId.isValid(id))) {
-    return "ပစ္စည်းစာရင်းကို စစ်ပါ။";
-  }
-
-  try {
-    await connectToDB();
-    const products = await Product.find({ ownerId, archivedAt: null, _id: { $in: ids } }).lean();
-    const byId = new Map(products.map((product) => [String(product._id), product]));
-    const items = ids.map((id, index) => {
-      const product = byId.get(id);
-      const amount = purchaseAmount(quantities[index], costs[index]);
-      if (!product || !Number.isFinite(amount)) return null;
-      return {
-        productId: product._id,
-        name: product.name,
-        unit: product.unit,
-        quantity: readNumber(quantities[index], 3),
-        unitCost: readNumber(costs[index], 0),
-        amount,
-      };
-    });
-    if (items.some((item) => item === null)) return "ပစ္စည်း၊ အရေအတွက်နဲ့ ဈေးနှုန်းကို စစ်ပါ။";
-    const total = items.reduce((sum, item) => sum + (item?.amount ?? 0), 0);
-    if (!Number.isSafeInteger(total)) return "စုစုပေါင်းငွေပမာဏ ကြီးလွန်းနေပါတယ်။";
-
-    await Purchase.updateOne(
-      { _id: requestId, ownerId },
-      { $setOnInsert: { ownerId, date, supplier, items, total } },
-      { upsert: true, runValidators: true },
-    );
-  } catch (error) {
-    console.error("Could not save purchase", error);
-    return "ဝယ်စာရင်းကို သိမ်းလို့မရသေးပါ။ ပြန်စမ်းကြည့်ပါ။";
-  }
-
-  revalidatePath("/dashboard/products");
-  redirect(path + "?saved=" + requestId);
-}
-
-export default async function NewPurchasePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ saved?: string }>;
-}) {
-  const ownerId = await getOwnerId();
-  const { saved } = await searchParams;
   await connectToDB();
-  const products = await Product.find({ ownerId, archivedAt: null }).sort({ name: 1 }).lean();
-  const receipt = saved && Types.ObjectId.isValid(saved)
-    ? await Purchase.findOne({ ownerId, _id: saved }).lean()
-    : null;
-  const date = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Yangon" }).format(new Date());
+  const ownerId = session.user.id;
+  const [purchases, categories] = await Promise.all([
+    Purchase.find({ ownerId }).sort({ date: -1, _id: -1 }).lean(),
+    Category.find({ ownerId }).select("name").lean(),
+  ]);
+  const categoryNames = new Map(categories.map(({ _id, name }) => [String(_id), name]));
+  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Yangon" }).format(new Date());
+  const month = today.slice(0, 7);
+
+  const rows = purchases.map(({ date, supplier, items, total }) => ({
+    date,
+    supplier,
+    names: [...new Set(items.map(({ name }) => name))].join(", "),
+    categories: items.map(({ categoryId }) => categoryNames.get(String(categoryId)) ?? "").join(", "),
+    items: items.map(({ name, unit, quantity, unitCost, amount }) => ({
+      name, unit, quantity, unitCost, amount,
+    })),
+    total,
+  }));
+
+  const totals = rows.reduce((summary, row) => {
+    summary.all += row.total;
+    if (row.date === today) summary.today += row.total;
+    if (row.date.slice(0, 7) === month) summary.month += row.total;
+    return summary;
+  }, { all: 0, today: 0, month: 0 });
+
+  const badges = [
+    { label: "စုစုပေါင်းဝယ်ဖိုး", value: formatKyat(totals.all) },
+    { label: "ဒီလ", value: formatKyat(totals.month) },
+    { label: "ဒီနေ့", value: formatKyat(totals.today) },
+    { label: "ဝယ်စာရင်း", value: rows.length.toLocaleString("en-US") + " စောင်" },
+  ];
 
   return (
     <div className="space-y-4">
       <BreadCrumbItem />
-      <Card className="ring-1 ring-blue-500/15">
-        <CardHeader className="rounded-t-xl bg-blue-50 dark:bg-blue-950/40">
-          <CardTitle><h1>ဝယ်စာရင်းအသစ်</h1></CardTitle>
+      <Card className={cardStyle}>
+        <div aria-hidden className="pointer-events-none absolute -right-28 -top-28 -z-10 size-72 rounded-full bg-blue-400/25 blur-3xl" />
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-3">
+            <CardTitle className="text-base font-semibold"><h1>အဝယ်</h1></CardTitle>
+            <div className="flex flex-wrap gap-2">
+              {badges.map(({ label, value }) => (
+                <Badge key={label} variant="secondary" className="rounded-full bg-background/60">
+                  {label} <span className="ml-1 font-semibold tabular-nums">{value}</span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+              <Link href="/dashboard/purchases/new"><Plus aria-hidden /> ဝယ်စာရင်းအသစ်</Link>
+            </Button>
+            <Button asChild variant="outline" className="bg-background/60">
+              <a href="/dashboard/purchases"><RefreshCw aria-hidden /> ပြန်ဖတ်ရန်</a>
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {receipt && <p role="status" className="text-blue-700 dark:text-blue-300">
-            ဝယ်စာရင်းသိမ်းပြီးပါပြီ။ စုစုပေါင်း {receipt.total.toLocaleString("en-US")} ကျပ်
-          </p>}
-          {products.length ? (
-            <PurchaseForm
-              key={saved ?? "new"}
-              requestId={new Types.ObjectId().toHexString()}
-              date={date}
-              save={savePurchase}
-              products={products.map(({ _id, name, code, unit, unitCost }) => ({
-                id: String(_id), name, code, unit, unitCost: Number.isSafeInteger(unitCost) ? unitCost : null,
-              }))}
-            />
-          ) : (
-            <Link className="text-blue-600 underline" href="/dashboard/products">
-              ကုန်ပစ္စည်းစာရင်းမှာ ပစ္စည်းအရင်ထည့်ပါ
-            </Link>
+      </Card>
+
+      <Card className={cardStyle}>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold"><h2>ဝယ်စာရင်း</h2></CardTitle>
+        </CardHeader>
+        <CardContent>
+          {rows.length ? <PurchasesTable rows={rows} today={today} /> : (
+            <p className="py-6 text-center text-sm text-muted-foreground">ဝယ်စာရင်း မရှိသေးပါ။</p>
           )}
         </CardContent>
       </Card>

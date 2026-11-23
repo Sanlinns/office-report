@@ -15,6 +15,7 @@ import { DataTable } from "@/components/dashboard/outcome/outcom_data_table";
 type ProductRow = {
   id: string;
   name: string;
+  category: string;
   code: string;
   unit: string;
   openingQuantity: number;
@@ -33,7 +34,7 @@ const columns: ColumnDef<ProductRow>[] = [
     cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     filterFn: (row, _, value: string) => {
       const query = value.trim().toLowerCase();
-      return [row.original.name, row.original.code].some((text) =>
+      return [row.original.name, row.original.code, row.original.category].some((text) =>
         text.toLowerCase().includes(query),
       );
     },
@@ -47,6 +48,7 @@ const columns: ColumnDef<ProductRow>[] = [
       </Badge>
     ),
   },
+  { accessorKey: "category", header: "အမျိုးအစား", cell: ({ row }) => row.original.category || "—" },
   { accessorKey: "unit", header: "ယူနစ်" },
   {
     accessorKey: "openingQuantity",
@@ -182,7 +184,7 @@ export default function ProductsTable({ rows }: { rows: ProductRow[] }) {
         columns={selectableColumns}
         data={activeRows}
         searchKey="name"
-        searchPlaceholder="ပစ္စည်းအမည် သို့မဟုတ် ကုဒ်ဖြင့် ရှာရန်"
+        searchPlaceholder="အမည်၊ ကုဒ် သို့မဟုတ် အမျိုးအစားဖြင့် ရှာရန်"
         theme="products"
       />
       <AlertDialog open={targets.length > 0} onOpenChange={(open) => {

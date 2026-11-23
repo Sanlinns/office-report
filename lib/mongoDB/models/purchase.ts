@@ -1,7 +1,8 @@
-import { Schema, model, models, type Model, type Types } from "mongoose";
+import { deleteModel, Schema, model, models, type Model, type Types } from "mongoose";
 
 interface PurchaseLine {
-  productId: Types.ObjectId;
+  productId?: Types.ObjectId;
+  categoryId?: Types.ObjectId;
   name: string;
   unit: string;
   quantity: number;
@@ -18,7 +19,8 @@ interface Purchase {
 }
 
 const lineSchema = new Schema<PurchaseLine>({
-  productId: { type: Schema.Types.ObjectId, required: true },
+  productId: { type: Schema.Types.ObjectId },
+  categoryId: { type: Schema.Types.ObjectId },
   name: { type: String, required: true },
   unit: { type: String, required: true },
   quantity: { type: Number, required: true },
@@ -33,6 +35,10 @@ const schema = new Schema<Purchase>({
   items: { type: [lineSchema], required: true },
   total: { type: Number, required: true },
 }, { timestamps: true });
+
+if (models.Purchase && !models.Purchase.schema.path("items.categoryId")) {
+  deleteModel("Purchase");
+}
 
 export default (models.Purchase as Model<Purchase> | undefined) ??
   model<Purchase>("Purchase", schema);

@@ -1,7 +1,8 @@
-import { deleteModel, Schema, model, models, type Model } from "mongoose";
+import { deleteModel, Schema, model, models, type Model, type Types } from "mongoose";
 
 interface Product {
   ownerId: string;
+  categoryId?: Types.ObjectId | null;
   code: string;
   name: string;
   unit: string;
@@ -15,6 +16,7 @@ interface Product {
 
 const productSchema = new Schema<Product>(
   {
+    categoryId: { type: Schema.Types.ObjectId },
     ownerId: { type: String, required: true },
     code: { type: String, required: true },
     name: { type: String, required: true },
@@ -31,8 +33,8 @@ const productSchema = new Schema<Product>(
 
 productSchema.index({ ownerId: 1, code: 1 }, { unique: true });
 
-// Next.js development reloads can retain the model compiled before the opening purchase total was added.
-if (models.Product && !models.Product.schema.path("openingPurchaseTotal")) {
+// Next.js development reloads can retain the model compiled before categories were added.
+if (models.Product && !models.Product.schema.path("categoryId")) {
   deleteModel("Product");
 }
 
