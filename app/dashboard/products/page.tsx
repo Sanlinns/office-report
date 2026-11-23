@@ -1,4 +1,6 @@
-<<<<<<< HEAD
+import Link from "next/link";
+import { inventoryMovements } from "@/lib/mongoDB/inventory";
+import ProductsTable from "@/components/dashboard/products/ProductsTable";
 import { Package, Plus, RefreshCw } from "lucide-react";
 import { BreadCrumbItem } from "@/components/dashboard/outcome/bread-crumb-item";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +19,8 @@ const fields = [
   { name: "name", label: "ပစ္စည်းအမည်", maxLength: 120 },
   { name: "code", label: "ပစ္စည်းကုဒ်", maxLength: 40 },
   { name: "unit", label: "ယူနစ်", maxLength: 30 },
-  { name: "openingQuantity", label: "စတင်လက်ကျန်", inputMode: "decimal" },
-  { name: "unitCost", label: "တစ်ယူနစ်ကုန်ကျစရိတ် (ကျပ်)", inputMode: "numeric" },
+  { name: "openingQuantity", label: "စတင်လက်ကျန် အရေအတွက်", inputMode: "decimal" },
+  { name: "openingPurchaseTotal", label: "မူလ စုစုပေါင်းဝယ်ဖိုး (ကျပ်)", inputMode: "numeric" },
   { name: "sellingPrice", label: "ပုံမှန်ရောင်းဈေး (ကျပ်)", inputMode: "numeric" },
 ] as const;
 
@@ -58,20 +60,22 @@ async function addProduct(form: FormData) {
   const name = String(form.get("name") ?? "").trim();
   const unit = String(form.get("unit") ?? "").trim();
   const openingQuantity = readNumber(form, "openingQuantity", 3);
-  const unitCost = readNumber(form, "unitCost");
+  const openingPurchaseTotal = readNumber(form, "openingPurchaseTotal");
   const sellingPrice = readNumber(form, "sellingPrice");
 
   if (!code || code.length > 40 || !name || name.length > 120 ||
       !unit || unit.length > 30 ||
-      ![openingQuantity, unitCost, sellingPrice].every(Number.isFinite)) {
+      ![openingQuantity, openingPurchaseTotal, sellingPrice].every(Number.isFinite) ||
+      (openingQuantity === 0 && openingPurchaseTotal !== 0)) {
     redirect(path + "?status=invalid");
   }
 
+  const unitCost = openingQuantity > 0 ? openingPurchaseTotal / openingQuantity : 0;
   let status: keyof typeof messages = "saved";
   try {
     await connectToDB();
     await Product.init();
-    await Product.create({ ownerId, code, name, unit, openingQuantity, unitCost, sellingPrice });
+    await Product.create({ ownerId, code, name, unit, openingQuantity, openingPurchaseTotal, unitCost, sellingPrice });
   } catch (error) {
     status = typeof error === "object" && error !== null &&
       "code" in error && error.code === 11000 ? "duplicate" : "failed";
@@ -88,7 +92,10 @@ export default async function ProductsPage({
   const ownerId = await getOwnerId();
   const { status } = await searchParams;
   await connectToDB();
-  const products = await Product.find({ ownerId }).sort({ name: 1, code: 1 }).lean();
+  const [products, movements] = await Promise.all([
+    Product.find({ ownerId, archivedAt: null }).sort({ name: 1, code: 1 }).lean(),
+    inventoryMovements(ownerId),
+  ]);
   const message = status && Object.hasOwn(messages, status)
     ? messages[status as keyof typeof messages]
     : null;
@@ -113,6 +120,12 @@ export default async function ProductsPage({
             {message && <p role="status" className="text-sm">{message}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/purchase/new">ဝယ်စာရင်းအသစ်</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/sales/new">ရောင်းစာရင်းအသစ်</Link>
+            </Button>
             <Dialog key={status ?? "new"}>
               <DialogTrigger asChild>
                 <Button className={blueButton}>
@@ -159,48 +172,19 @@ export default async function ProductsPage({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {products.length === 0 ? (
-            <p className="text-sm text-muted-foreground">ပစ္စည်းစာရင်း မရှိသေးပါ။</p>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border">
-              <table className="w-full whitespace-nowrap text-sm">
-                <thead className="bg-blue-50 text-blue-950 dark:bg-blue-950/50 dark:text-blue-100">
-                  <tr>
-                    {fields.map((field) => (
-                      <th key={field.name} scope="col" className="p-3 text-left">{field.label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => (
-                    <tr key={String(product._id)} className="border-t hover:bg-blue-500/5">
-                      <td className="p-3">{product.name}</td>
-                      <td className="p-3">{product.code}</td>
-                      <td className="p-3">{product.unit}</td>
-                      <td className="p-3">{number.format(product.openingQuantity)}</td>
-                      <td className="p-3">{number.format(product.unitCost)} ကျပ်</td>
-                      <td className="p-3">{number.format(product.sellingPrice)} ကျပ်</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <ProductsTable rows={products.map((product) => ({
+            id: String(product._id),
+            name: product.name,
+            code: product.code,
+            unit: product.unit,
+            openingQuantity: product.openingQuantity,
+            stockQuantity: product.openingQuantity + (movements.get(String(product._id))?.quantity ?? 0),
+            openingPurchaseTotal: product.openingPurchaseTotal ?? Math.round(product.openingQuantity * product.unitCost),
+            unitCost: product.unitCost,
+            sellingPrice: product.sellingPrice,
+          }))} />
         </CardContent>
       </Card>
     </div>
   );
 }
-=======
-import React from 'react'
-
-const page = () => {
-  return (
-    <div>
-      product page 
-    </div>
-  )
-}
-
-export default page
->>>>>>> 39ed10d36dd1998cb9f604a8021e7849101eb832
