@@ -26,4 +26,4 @@ const productSchema = new Schema<Product>(
 productSchema.index({ ownerId: 1, code: 1 }, { unique: true });
 
 export default (models.Product as Model<Product> | undefined) ??
-  model<Product>("Product", productSchema);
+model<Product>("Product", productSchema);

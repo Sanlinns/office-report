@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Package, Plus, RefreshCw } from "lucide-react";
 import { BreadCrumbItem } from "@/components/dashboard/outcome/bread-crumb-item";
 import { Badge } from "@/components/ui/badge";
@@ -190,3 +191,16 @@ export default async function ProductsPage({
     </div>
   );
 }
+=======
+import React from 'react'
+
+const page = () => {
+  return (
+    <div>
+      product page 
+    </div>
+  )
+}
+
+export default page
+>>>>>>> 39ed10d36dd1998cb9f604a8021e7849101eb832
