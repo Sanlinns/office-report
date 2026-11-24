@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 
 // app/api/ai/parse-income/route.ts
 import { NextResponse } from "next/server";
@@ -476,6 +477,8 @@ function formatOutput(n: Normalized) {
 }
 
 export async function POST(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     const { text } = (await req.json()) as { text?: string };
     const input = (text ?? "").trim();

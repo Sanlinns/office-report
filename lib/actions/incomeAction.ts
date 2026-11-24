@@ -1,5 +1,8 @@
 "use server";
 
+import { requireSession } from "@/lib/session";
+
+
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
 import Income from "@/lib/mongoDB/models/income";
 import { revalidatePath } from "next/cache";
@@ -19,6 +22,7 @@ export async function createIncomeAction(
   _prev: IncomeActionState,
   fd: FormData
 ): Promise<IncomeActionState> {
+  await requireSession();
   try {
     const amount = toNumber(fd.get("amount"));
     const month = toStr(fd.get("month"));
@@ -57,6 +61,7 @@ export async function createIncomeAction(
 
 
 export async function deleteIncomeAction(id: string) {
+  await requireSession();
     if (!id) throw new Error("Missing id");
   
     await connectToDB();

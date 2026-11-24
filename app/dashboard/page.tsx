@@ -31,7 +31,7 @@ import DailyChartClient from "@/components/dashboard/DailyChartClient";
 
 export default async function Page() {
   const h = await headers();
-  const session = await auth.api.getSession({
+  const session = await auth.api.getSession({ query: { disableCookieCache: true },
     headers: Object.fromEntries(h.entries()),
   });
 

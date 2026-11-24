@@ -7,7 +7,7 @@ import Settings from "@/lib/mongoDB/models/settings";
 
 export async function GET() {
   const h = await headers();
-  const session = await auth.api.getSession({
+  const session = await auth.api.getSession({ query: { disableCookieCache: true },
     headers: Object.fromEntries(h.entries()),
   });
 
@@ -27,7 +27,7 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   const h = await headers();
-  const session = await auth.api.getSession({
+  const session = await auth.api.getSession({ query: { disableCookieCache: true },
     headers: Object.fromEntries(h.entries()),
   });
 

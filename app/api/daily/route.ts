@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { DailyNote } from "@/lib/mongoDB/models/DailyNote";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
 import { NextResponse } from "next/server";
@@ -11,6 +12,8 @@ function todayKey() {
 }
 
 export async function GET() {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
     await connectToDB();
     const key = todayKey();
 

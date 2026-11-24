@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 // import Income from "@/lib/mongoDB/models/income";
 // import Outcome from "@/lib/mongoDB/models/outcome";
 // import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -80,6 +81,8 @@ function toYMD(d: Date) {
 }
 
 export async function GET(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

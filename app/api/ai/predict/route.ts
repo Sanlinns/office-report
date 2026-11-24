@@ -1,6 +1,9 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     const { text } = (await req.json()) as { text?: string };
     const input = (text ?? "").trim();

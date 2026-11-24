@@ -1,3 +1,4 @@
+import { requireSession } from "@/lib/session";
   
 
 import Income from "../mongoDB/models/income";
@@ -58,6 +59,7 @@ function formatDayTokyo(d: Date) {
 
 
 export async function fetchIncomesTotal() {
+  await requireSession();
   try {
     await connectToDB();
     return await sumIncomeByCreatedAtRange();
@@ -85,6 +87,7 @@ export async function fetchIncomesTotal() {
 // ======================================================
 
 export async function fetchTodayTotals() {
+  await requireSession();
   await connectToDB();
 
   const start = new Date();
@@ -111,6 +114,7 @@ export async function fetchTodayTotals() {
 // ======================================================
 
 export async function fetchMonthTotals() {
+  await requireSession();
   await connectToDB();
 
   const now = new Date();
@@ -163,6 +167,7 @@ function tokyoLikeRange(timezone: string, type: "today" | "month") {
 }
 
 export async function fetchTodayTotalsTZ(timezone = "Asia/Tokyo") {
+  await requireSession();
   await connectToDB();
   const { start, end } = tokyoLikeRange(timezone, "today");
   const [incomeToday, outcomeToday] = await Promise.all([
@@ -174,6 +179,7 @@ export async function fetchTodayTotalsTZ(timezone = "Asia/Tokyo") {
 }
 
 export async function fetchMonthTotalsTZ(timezone = "Asia/Tokyo") {
+  await requireSession();
   await connectToDB();
   const { start, end } = tokyoLikeRange(timezone, "month");
   const [incomeMonth, outcomeMonth] = await Promise.all([
@@ -188,6 +194,7 @@ export async function fetchMonthTotalsTZ(timezone = "Asia/Tokyo") {
 
 
 export async function fetchDailySeries(days = 14): Promise<DailyPoint[]> {
+  await requireSession();
   await connectToDB();
 
   const now = new Date();
@@ -235,6 +242,7 @@ export async function fetchDailySeries(days = 14): Promise<DailyPoint[]> {
 
 
 export async function fetchOutcomes() {
+  await requireSession();
   try {
     await connectToDB();
 
@@ -257,6 +265,7 @@ export async function fetchOutcomes() {
 }
 
 export async function fetchIncomes() {
+  await requireSession();
   try {
     await connectToDB();
     // ✅ lean() => plain objects (ပို safe)
@@ -270,6 +279,7 @@ export async function fetchIncomes() {
 
 
 export async function totalOutcometest() {
+  await requireSession();
   try {
     await connectToDB();
     return await sumOutcomeByCreatedAtRange();

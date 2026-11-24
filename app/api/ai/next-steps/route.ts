@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 // app/api/ai/next-steps/route.ts
 import { NextResponse } from "next/server";
 
@@ -10,6 +11,8 @@ import { NextResponse } from "next/server";
  *   GET /api/ai/next-steps  ->  {FASTAPI_BASE}/next_steps
  */
 export async function GET() {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     const base = process.env.FASTAPI_BASE || "http://localhost:8000";
     const url = `${base.replace(/\/$/, "")}/next_steps`;

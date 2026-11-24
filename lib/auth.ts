@@ -1,23 +1,3 @@
-// import { betterAuth } from "better-auth";
-// import { MongoClient } from "mongodb";
-// import { mongodbAdapter } from "better-auth/adapters/mongodb";
-
-// const client = new MongoClient(process.env.MONGODB_URL!);
-// const db = client.db();
-
-// export const auth = betterAuth({
-//   database: mongodbAdapter(db), // ✅ remove client
-//   emailAndPassword: {
-//     enabled: true,
-//     autoSignIn: false,
-//   },
-//   session: {
-//     freshAge: 60 * 5,
-//   },
-// });
-
-
-
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
@@ -27,6 +7,7 @@ const client = new MongoClient(process.env.MONGODB_URL!);
 const db = client.db();
 
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL, // e.g. http://localhost:3000
   database: mongodbAdapter(db), // (standalone Mongo: client မပေးတာ safe)
 
@@ -45,8 +26,12 @@ export const auth = betterAuth({
 
     // ✅ forgot/reset password email sender
     sendResetPassword: async ({ user, url }) => {
-      // TODO: Resend / Nodemailer / SES နဲ့ email ပို့
-      console.log("RESET PASSWORD URL:", user.email, url);
+      if (process.env.NODE_ENV === "development") {
+        console.log("RESET PASSWORD URL:", user.email, url);
+        return;
+      }
+      // Wire an email provider before enabling password resets in production.
+      throw new Error("Password reset email provider is not configured");
     },
   },
 

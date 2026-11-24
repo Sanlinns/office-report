@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 
 import { DailyNote } from "@/lib/mongoDB/models/DailyNote";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -19,6 +20,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: Ctx
 ) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 
@@ -95,6 +98,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: Ctx
 ) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

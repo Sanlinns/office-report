@@ -45,6 +45,7 @@ export default function Sign_up() {
   const router = useRouter();
 
   const [isLoading,setIsLoading]=useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [image,setImage]=useState<File|null>(null);
   const [preview,setPreview]=useState<string>("");
 
@@ -65,6 +66,7 @@ export default function Sign_up() {
 
   async function onSubmit(values:FormValues){
 
+    setUploadError("");
     setIsLoading(true);
 
     try{
@@ -73,6 +75,9 @@ export default function Sign_up() {
 
       // 🔥 upload image first (optional)
       if(image){
+        if (image.size > 4 * 1024 * 1024) {
+          throw new Error("ပုံဖိုင်ကို 4 MB အောက် ထည့်ပါ။");
+        }
         const fd=new FormData();
         fd.append("file",image);
 
@@ -81,7 +86,10 @@ export default function Sign_up() {
           body:fd
         });
 
-        const data=await res.json();
+        const data = await res.json().catch(() => null);
+        if (!res.ok || typeof data?.url !== "string") {
+          throw new Error(data?.error || "ပုံတင်လို့မရသေးပါ။ ပြန်စမ်းပါ။");
+        }
         imagePath=data.url;   // <-- your API must return {url:"..."}
       }
 
@@ -101,7 +109,7 @@ export default function Sign_up() {
       );
 
     }catch(err){
-      console.log(err);
+      setUploadError(err instanceof Error ? err.message : "ပြန်စမ်းကြည့်ပါ။");
     }
 
     setIsLoading(false);
@@ -141,12 +149,13 @@ export default function Sign_up() {
 
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp"
                   hidden
                   onChange={handleImage}
                 />
               </label>
 
+              {uploadError && <p role="alert" className="text-sm text-destructive">{uploadError}</p>}
               <p className="text-xs text-muted-foreground">
                 profile image upload
               </p>

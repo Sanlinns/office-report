@@ -11,7 +11,7 @@ import Sale from "@/lib/mongoDB/models/sale";
 export async function deleteSales(ids: string[]): Promise<
   { ok: true; count: number } | { ok: false; message: string }
 > {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) return { ok: false, message: "အကောင့်ပြန်ဝင်ပြီး စမ်းကြည့်ပါ။" };
 
   if (!Array.isArray(ids) || !ids.length || ids.length > 500 ||

@@ -1,3 +1,4 @@
+import { requireSession } from "@/lib/session";
 import Outcome from "../mongoDB/models/outcome";
 import { connectToDB } from "../mongoDB/mongoDB";
 
@@ -11,6 +12,7 @@ export type OutcomeRow = {
 };
 
 export async function fetchOutcomesTable() {
+  await requireSession();
   await connectToDB();
 
   const docs = await Outcome.find({})

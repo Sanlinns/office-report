@@ -1,14 +1,17 @@
+import { requireSession } from "@/lib/session";
 
 import React from "react";
 
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { dashboardNavItems } from "@/lib/dashboardNavItems";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireSession();
+
   return (
     <div className="flex min-h-screen">
       {/* ✅ MAIN CONTENT */}

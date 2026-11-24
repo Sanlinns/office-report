@@ -117,7 +117,7 @@ import { connectToDB } from "@/lib/mongoDB/mongoDB";
 const cardStyle = "relative isolate overflow-hidden border-0 bg-gradient-to-br from-blue-50/70 via-background to-muted/20 shadow-lg ring-1 ring-black/5 dark:from-blue-950/40 dark:ring-white/10";
 
 export default async function PurchasesPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
 
   await connectToDB();

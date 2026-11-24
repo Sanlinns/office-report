@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
 import Message from "@/lib/mongoDB/models/message";
@@ -17,6 +18,8 @@ export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ chatId: string }> }
 ) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

@@ -24,7 +24,7 @@ const messages = {
 };
 
 async function owner() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
   return session.user.id;
 }

@@ -1,9 +1,12 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000";
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     const body = await req.json();
 

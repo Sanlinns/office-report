@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 
 import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -525,9 +526,9 @@ function answerProjectQA(text: string): AskResponse {
   );
 }
 
-async function answerFinanceFallback(input: string): Promise<NextResponse> {
+async function answerFinanceFallback(input: string, req: Request): Promise<NextResponse> {
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.BETTER_AUTH_URL || new URL(req.url).origin;
     const target = detectFinanceTarget(input);
 
     const endpoint =
@@ -535,7 +536,7 @@ async function answerFinanceFallback(input: string): Promise<NextResponse> {
 
     const r = await fetch(new URL(endpoint, appUrl).toString(), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", cookie: req.headers.get("cookie") ?? "" },
       body: JSON.stringify({ text: input }),
       cache: "no-store",
     });
@@ -706,6 +707,8 @@ function answerGeneralQA(): AskResponse {
 }
 
 export async function POST(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     const body = (await req.json().catch(() => ({}))) as { text?: string };
     const input = (body?.text ?? "").trim();
@@ -733,7 +736,7 @@ export async function POST(req: Request) {
         return await answerRemittanceQA(input);
       }
 
-      return await answerFinanceFallback(input);
+      return await answerFinanceFallback(input, req);
     }
 
     return NextResponse.json(answerGeneralQA());

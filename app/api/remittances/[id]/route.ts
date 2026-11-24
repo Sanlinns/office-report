@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -24,6 +25,8 @@ function cleanStatus(value: unknown): RemittanceStatus | null {
 }
 
 export async function PATCH(req: NextRequest, context: RouteContext) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 
@@ -69,6 +72,8 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(_req: NextRequest, context: RouteContext) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

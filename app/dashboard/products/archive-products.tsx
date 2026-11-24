@@ -9,7 +9,7 @@ import Product from "@/lib/mongoDB/models/product";
 export async function archiveProducts(ids: string[]): Promise<
   { ok: true; count: number; archivedIds: string[] } | { ok: false; message: string }
 > {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) return { ok: false, message: "အကောင့်ပြန်ဝင်ပြီး စမ်းကြည့်ပါ။" };
 
   if (!Array.isArray(ids) || !ids.length ||

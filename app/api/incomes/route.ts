@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -9,6 +10,8 @@ import Income from "@/lib/mongoDB/models/income";
 // ✅ GET /api/incomes
 // =========================
 export async function GET(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 
@@ -45,6 +48,8 @@ export async function GET(req: Request) {
 // body: { date?, amount, month, compamy?, notice? }
 // =========================
 export async function POST(req: Request) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

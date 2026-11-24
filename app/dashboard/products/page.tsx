@@ -37,7 +37,7 @@ const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
 const path = "/dashboard/products";
 
 async function getOwnerId() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
   return session.user.id;
 }

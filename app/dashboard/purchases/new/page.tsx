@@ -16,7 +16,7 @@ import PurchaseForm from "@/components/product/purchase-form";
 const path = "/dashboard/purchases/new";
 
 async function getOwnerId() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
   return session.user.id;
 }

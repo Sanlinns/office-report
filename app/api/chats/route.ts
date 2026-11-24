@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
 import Chat from "@/lib/mongoDB/models/chat";
@@ -10,6 +11,8 @@ const toClient = (c: any) => ({
 });
 
 export const GET = async () => {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
     const chats = await Chat.find().sort({ updatedAt: -1 }).lean();
@@ -21,6 +24,8 @@ export const GET = async () => {
 };
 
 export const POST = async (req: NextRequest) => {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
     const body = await req.json().catch(() => ({}));

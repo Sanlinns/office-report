@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -69,6 +70,8 @@ function toClient(doc: RemittanceDoc) {
 }
 
 export async function GET() {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 
@@ -87,6 +90,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

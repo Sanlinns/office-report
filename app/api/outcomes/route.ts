@@ -1,3 +1,4 @@
+import { unauthorizedResponse } from "@/lib/session";
 // app/api/outcomes/route.ts
 import Outcome from "@/lib/mongoDB/models/outcome";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
@@ -16,6 +17,8 @@ const toClient = (d: any) => ({
 });
 
 export const GET = async () => {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 
@@ -32,6 +35,8 @@ export const GET = async () => {
 };
 
 export const POST = async (req: NextRequest) => {
+  const unauthorized = await unauthorizedResponse();
+  if (unauthorized) return unauthorized;
   try {
     await connectToDB();
 

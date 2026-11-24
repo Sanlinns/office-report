@@ -33,7 +33,7 @@ function safeDateKey(iso?: string) {
 
 export default async function OutcomePage() {
   const h = await headers();
-  const session = await auth.api.getSession({
+  const session = await auth.api.getSession({ query: { disableCookieCache: true },
     headers: Object.fromEntries(h.entries()),
   });
 

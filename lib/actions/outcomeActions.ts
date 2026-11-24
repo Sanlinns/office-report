@@ -1,5 +1,8 @@
 "use server";
 
+import { requireSession } from "@/lib/session";
+
+
 import { revalidatePath } from "next/cache";
 import { connectToDB } from "../mongoDB/mongoDB";
 import Outcome from "../mongoDB/models/outcome";
@@ -17,6 +20,7 @@ export async function createOutcomeAction(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireSession();
   try {
     const amount = toNumber(formData.get("amount"));
     const shop = String(formData.get("shop") ?? "").trim();
@@ -49,6 +53,7 @@ export async function createOutcomeAction(
 }
 
 export async function deleteOutcomeAction(id: string): Promise<ActionState> {
+  await requireSession();
   try {
     await connectToDB();
     await Outcome.findByIdAndDelete(id);
@@ -63,6 +68,7 @@ export async function deleteOutcomeAction(id: string): Promise<ActionState> {
 
 
 export async function fetchOutcomes() {
+  await requireSession();
     try {
       await connectToDB();
   
