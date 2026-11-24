@@ -25,14 +25,16 @@ export default function PurchaseForm({ products, categories, requestId, date, sa
   const isSale = mode === "sale";
   const priceLabel = isSale ? "တစ်ယူနစ်ရောင်းဈေး" : "တစ်ယူနစ်ဝယ်ဈေး";
   const nextId = useRef(1);
-  const [rows, setRows] = useState([{ id: 0, categoryId: "", purchaseUnit: "", productId: "", quantity: "", unitCost: "", lineTotal: "" }]);
+  const [rows, setRows] = useState([{ id: 0, categoryId: "", purchaseUnit: "", productId: "", quantity: "", unitCost: "", lineTotal: "", priceMode: "total" as "total" | "unit" }]);
   const [purchaseDate, setDate] = useState(date);
   const [supplier, setSupplier] = useState("");
   const [error, action, pending] = useActionState(
     (_previous: string, form: FormData) => save(form),
     "",
   );
-  const amounts = rows.map((row) => isSale ? purchaseAmount(row.quantity, row.unitCost) : readNumber(row.lineTotal, 0));
+  const amounts = rows.map((row) => isSale ? purchaseAmount(row.quantity, row.unitCost)
+    : row.priceMode === "unit" ? purchaseAmount(row.quantity, row.lineTotal)
+    : readNumber(row.lineTotal, 0));
   const total = amounts.reduce((sum, amount) => sum + (Number.isFinite(amount) ? amount : 0), 0);
 
   function update(id: number, values: Partial<Omit<(typeof rows)[number], "id">>) {
@@ -117,6 +119,9 @@ export default function PurchaseForm({ products, categories, requestId, date, sa
                   {isSale ? (
                     <Input name="unitCost" aria-label={`${priceLabel} ${index + 1}`} inputMode="numeric" required
                       value={row.unitCost} onChange={(event) => update(row.id, { unitCost: event.target.value })} />
+                  ) : row.priceMode === "unit" ? (
+                    <Input name="lineTotal" aria-label={`တစ်ယူနစ်ဝယ်ဈေး ${index + 1}`} inputMode="numeric" required
+                      value={row.lineTotal} onChange={(event) => update(row.id, { lineTotal: event.target.value })} />
                   ) : (
                     <span className="whitespace-nowrap tabular-nums">
                       {readNumber(row.quantity, 3) > 0 ? money(amounts[index] / readNumber(row.quantity, 3)) : "—"}
@@ -125,8 +130,21 @@ export default function PurchaseForm({ products, categories, requestId, date, sa
                 </td>
                 <td className="p-2 text-right tabular-nums">
                   {isSale ? money(amounts[index]) : (
-                    <Input name="lineTotal" aria-label={`စုစုပေါင်းဝယ်ဖိုး ${index + 1}`} inputMode="numeric" required
-                      value={row.lineTotal} onChange={(event) => update(row.id, { lineTotal: event.target.value })} />
+                    <div className="grid min-w-40 gap-2">
+                      <select name="priceMode" aria-label={`ဈေးထည့်မည့်ပုံစံ ${index + 1}`}
+                        className="h-9 rounded-md border bg-background px-2"
+                        value={row.priceMode} onChange={(event) => update(row.id, {
+                          priceMode: event.target.value === "unit" ? "unit" : "total",
+                          lineTotal: "",
+                        })}>
+                        <option value="total">စုစုပေါင်းဖြင့် ထည့်ရန်</option>
+                        <option value="unit">တစ်ယူနစ်ဈေးဖြင့် ထည့်ရန်</option>
+                      </select>
+                      {row.priceMode === "unit" ? <span>{money(amounts[index])}</span> : (
+                        <Input name="lineTotal" aria-label={`စုစုပေါင်းဝယ်ဖိုး ${index + 1}`} inputMode="numeric" required
+                          value={row.lineTotal} onChange={(event) => update(row.id, { lineTotal: event.target.value })} />
+                      )}
+                    </div>
                   )}
                 </td>
                 <td className="p-2 text-center">
@@ -146,7 +164,7 @@ export default function PurchaseForm({ products, categories, requestId, date, sa
         <Button type="button" variant="outline" disabled={rows.length >= 100 || pending}
           onClick={() => {
             const id = nextId.current++;
-            setRows((previous) => [...previous, { id, categoryId: "", purchaseUnit: "", productId: "", quantity: "", unitCost: "", lineTotal: "" }]);
+            setRows((previous) => [...previous, { id, categoryId: "", purchaseUnit: "", productId: "", quantity: "", unitCost: "", lineTotal: "", priceMode: "total" as "total" | "unit" }]);
           }}>
           <Plus /> {showCategories ? "Category ထည့်ရန်" : "ပစ္စည်းထည့်ရန်"}
         </Button>
