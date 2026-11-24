@@ -31,16 +31,18 @@ export async function POST(req: Request) {
 
   const filename = `${randomUUID()}.${image.ext}`;
   const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token && process.env.NODE_ENV === "production") {
+  const storeId = process.env.BLOB_STORE_ID?.trim();
+  if (!token && !storeId && process.env.NODE_ENV === "production") {
     return NextResponse.json({ error: "ပုံသိမ်းရန် Blob storage မချိတ်ထားသေးပါ။" }, { status: 503 });
   }
 
   try {
-    if (token) {
+    if (token || storeId) {
       const blob = await put(`profile-images/${filename}`, file, {
         access: "public",
         contentType: image.type,
         token,
+        storeId,
       });
       return NextResponse.json({ url: blob.url });
     }
