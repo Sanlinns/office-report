@@ -1,3 +1,4 @@
+import DeleteCategoryButton from "./delete-category-button";
 import { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 
 const path = "/dashboard/categories";
 const messages = {
+  removed: "အမျိုးအစား ဖယ်ရှားပြီးပါပြီ။",
   saved: "ပစ္စည်းအမျိုးအစား သိမ်းပြီးပါပြီ။",
   assigned: "ပစ္စည်းအမျိုးအစား သတ်မှတ်ပြီးပါပြီ။",
   duplicate: "ဒီအမျိုးအစားအမည် ရှိပြီးသားပါ။",
@@ -59,7 +61,7 @@ async function assignCategory(form: FormData) {
   }
 
   await connectToDB();
-  if (categoryId && !await Category.exists({ ownerId, _id: categoryId })) {
+  if (categoryId && !await Category.exists({ ownerId, _id: categoryId, archivedAt: null })) {
     redirect(path + "?status=invalid");
   }
 
@@ -73,6 +75,30 @@ async function assignCategory(form: FormData) {
   redirect(path + "?status=assigned");
 }
 
+async function removeCategory(id: string) {
+  "use server";
+
+  const ownerId = await owner();
+  if (!Types.ObjectId.isValid(id)) redirect(path + "?status=invalid");
+
+  try {
+    await connectToDB();
+    const result = await Category.deleteOne({ ownerId, _id: id });
+    if (!result.acknowledged || result.deletedCount !== 1) {
+      throw new Error("Category was not deleted");
+    }
+  } catch (error) {
+    console.error("Could not delete category", error);
+    redirect(path + "?status=failed");
+  }
+
+  revalidatePath(path);
+  revalidatePath("/dashboard/products");
+  revalidatePath("/dashboard/purchases/new");
+  revalidatePath("/dashboard/purchases");
+  redirect(path + "?status=removed");
+}
+
 export default async function CategoriesPage({ searchParams }: {
   searchParams: Promise<{ status?: string }>;
 }) {
@@ -80,7 +106,7 @@ export default async function CategoriesPage({ searchParams }: {
   const { status } = await searchParams;
   await connectToDB();
   const [categories, products] = await Promise.all([
-    Category.find({ ownerId }).sort({ name: 1 }).lean(),
+    Category.find({ ownerId, archivedAt: null }).sort({ name: 1 }).lean(),
     Product.find({ ownerId, archivedAt: null }).sort({ name: 1 }).select("name code categoryId").lean(),
   ]);
   const counts = new Map<string, number>();
@@ -152,7 +178,10 @@ export default async function CategoriesPage({ searchParams }: {
                     <span className="font-medium">{category.name}</span>
                     {category.unit && <p className="text-muted-foreground">မူလယူနစ် · {category.unit}</p>}
                   </div>
-                  <span className="text-muted-foreground">ပစ္စည်း {counts.get(String(category._id)) ?? 0} မျိုး</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground">ပစ္စည်း {counts.get(String(category._id)) ?? 0} မျိုး</span>
+                    <DeleteCategoryButton name={category.name} action={removeCategory.bind(null, String(category._id))} />
+                  </div>
                 </li>
               ))}
             </ul>

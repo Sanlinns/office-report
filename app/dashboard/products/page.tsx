@@ -77,7 +77,7 @@ async function addProduct(form: FormData) {
   let status: keyof typeof messages = "saved";
   try {
     await connectToDB();
-    if (categoryId && (!Types.ObjectId.isValid(categoryId) || !await Category.exists({ ownerId, _id: categoryId }))) {
+    if (categoryId && (!Types.ObjectId.isValid(categoryId) || !await Category.exists({ ownerId, _id: categoryId, archivedAt: null }))) {
       status = "invalid";
     } else {
       await Product.init();
@@ -130,7 +130,7 @@ export default async function ProductsPage({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" asChild>
-              <Link href="/dashboard/purchase/new">ဝယ်စာရင်းအသစ်</Link>
+              <Link href="/dashboard/purchases/new">ဝယ်စာရင်းအသစ်</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/dashboard/sales/new">ရောင်းစာရင်းအသစ်</Link>
@@ -149,7 +149,7 @@ export default async function ProductsPage({
                 </DialogHeader>
                 <form action={addProduct} className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <CategoryUnitFields categories={categories.map(({ _id, name, unit }) => ({
+                    <CategoryUnitFields categories={categories.filter(({ archivedAt }) => !archivedAt).map(({ _id, name, unit }) => ({
                       id: String(_id), name, unit: unit ?? "",
                     }))} />
                     {fields.map((field) => (
