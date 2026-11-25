@@ -1,5 +1,5 @@
 
-type IncomeType ={
+export type IncomeType ={
     date:Date,
     amount:number,
     month:string,
@@ -9,7 +9,7 @@ type IncomeType ={
     _id:string,
 
 }
-type OutComeType = {
+export type OutComeType = {
     _id: string,
     date:Date,
     amount:string,
@@ -18,7 +18,6 @@ type OutComeType = {
     notice:string,
     createdAt:Date,
 }
-
 
 export type ChartBoxConfig = {
     title: string;

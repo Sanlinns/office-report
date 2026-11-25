@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import Delete_In from "./Delete_In";
+import { IncomeType } from "@/types/type";
 
 const yen = (n: any) =>
   `¥ ${new Intl.NumberFormat("ja-JP").format(Number(n ?? 0) || 0)}`;

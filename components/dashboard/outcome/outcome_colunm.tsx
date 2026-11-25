@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Delete_Out from "@/components/Form/Delete_Out";
+import { OutComeType } from "@/types/type";
 
 
 export const columns: ColumnDef<OutComeType>[] = [
