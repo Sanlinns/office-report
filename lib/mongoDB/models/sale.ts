@@ -1,10 +1,11 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import { deleteModel, Schema, model, models, type InferSchemaType, type Model } from "mongoose";
 
 const lineSchema = new Schema({
   productId: { type: Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
   unit: { type: String, required: true },
   quantity: { type: Number, required: true },
+  stockQuantity: { type: Number, min: 0 },
   unitPrice: { type: Number, required: true },
   amount: { type: Number, required: true },
   cost: { type: Number, required: true },
@@ -20,4 +21,8 @@ const schema = new Schema({
 }, { timestamps: true });
 
 type Sale = InferSchemaType<typeof schema>;
+if (models.Sale && !models.Sale.schema.path("items.stockQuantity")) {
+  deleteModel("Sale");
+}
+
 export default (models.Sale as Model<Sale> | undefined) ?? model<Sale>("Sale", schema);

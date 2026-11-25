@@ -11,7 +11,7 @@ export async function inventoryMovements(ownerId: string, session?: ClientSessio
   ]).session(session ?? null);
   const sales = await Sale.aggregate<Movement>([
     { $match: { ownerId } }, { $unwind: "$items" },
-    { $group: { _id: { $toString: "$items.productId" }, quantity: { $sum: "$items.quantity" }, value: { $sum: "$items.cost" } } },
+    { $group: { _id: { $toString: "$items.productId" }, quantity: { $sum: { $ifNull: ["$items.stockQuantity", "$items.quantity"] } }, value: { $sum: "$items.cost" } } },
   ]).session(session ?? null);
 
   const net = new Map(purchases.map((row) => [row._id, row]));
