@@ -1,3 +1,4 @@
+
 "use server";
 
 import mongoose from "mongoose";
@@ -10,7 +11,7 @@ import Product from "@/lib/mongoDB/models/product";
 import Purchase from "@/lib/mongoDB/models/purchase";
 
 export async function deletePurchase(id: string): Promise<{ ok: true } | { ok: false; message: string }> {
-  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user.id) return { ok: false, message: "အကောင့်ပြန်ဝင်ပြီး စမ်းကြည့်ပါ။" };
   if (typeof id !== "string" || !/^[0-9a-f]{24}$/i.test(id)) {
     return { ok: false, message: "ဝယ်စာရင်းနံပါတ်ကို ပြန်စစ်ပါ။" };
@@ -67,6 +68,7 @@ export async function deletePurchase(id: string): Promise<{ ok: true } | { ok: f
   }
 
   revalidatePath("/dashboard/purchases");
+  revalidatePath("/dashboard/purchase-budget");
   revalidatePath("/dashboard/purchases/new");
   revalidatePath("/dashboard/products");
   revalidatePath("/dashboard/sales/new");

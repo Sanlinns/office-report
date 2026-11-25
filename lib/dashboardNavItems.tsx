@@ -22,6 +22,12 @@ export const dashboardNavItems = [
     href: "/dashboard",
     match: "exact" as const,
   },
+    {
+    title: "ကုန်ဝယ်ရန်ပုံငွေ",
+    icon: <IconWallet className="h-full w-full text-green-500" />,
+    href: "/dashboard/purchase-budget",
+  },
+
 
   {
     title: "ကုန်ပစ္စည်း",
