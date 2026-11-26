@@ -29,11 +29,13 @@ export default async function SalesPage() {
     id: _id.toString(),
     date,
     customer: customer ?? "",
-    products: items.map(({ name, quantity, unit, amount }) =>
-      `${name} · ${quantityFormat.format(quantity)} ${unit} · ${formatKyat(amount)}`,
-    ).join("\n"),
+    products: items.map(({ name }) => name).join(", "),
+    items: items.map(({ name, quantity, unit, amount }) => ({
+      name,
+      quantity: `${quantityFormat.format(quantity)} ${unit}`,
+      amount,
+    })),
     total,
-    cost,
     profit: total - cost,
   }));
 

@@ -17,9 +17,7 @@ export type SalesRow = {
   date: string;
   customer: string;
   products: string;
-  total: number;
-  cost: number;
-  profit: number;
+  items: { name: string; quantity: string; amount: number }[];
 };
 
 const filters = [
@@ -31,9 +29,11 @@ const filters = [
 const columns: ColumnDef<SalesRow>[] = [
   { accessorKey: "date", header: "ရောင်းချရက်" },
   {
-    accessorKey: "customer",
-    header: "ဝယ်သူ",
-    cell: ({ row }) => row.original.customer || "—",
+    accessorKey: "products",
+    header: "ပစ္စည်းအမည်",
+    cell: ({ row }) => <div className="w-60">{row.original.items.map(({ name }, index) => (
+      <div key={index} className="truncate leading-6" title={name}>{name}</div>
+    ))}</div>,
     filterFn: (row, _, value: string) => {
       const query = value.trim().toLowerCase();
       return [row.original.customer, row.original.products].some((text) =>
@@ -42,28 +42,18 @@ const columns: ColumnDef<SalesRow>[] = [
     },
   },
   {
-    accessorKey: "products",
-    header: "ပစ္စည်းများ",
-    cell: ({ row }) => <div className="w-60 whitespace-pre-line break-words">{row.original.products}</div>,
+    id: "quantity",
+    header: "ပမာဏ",
+    cell: ({ row }) => row.original.items.map(({ quantity }, index) => (
+      <div key={index} className="whitespace-nowrap leading-6 tabular-nums">{quantity}</div>
+    )),
   },
   {
-    accessorKey: "total",
-    header: () => <div className="text-right">ရောင်းရငွေ</div>,
-    cell: ({ row }) => <div className="text-right tabular-nums">{formatKyat(row.original.total)}</div>,
-  },
-  {
-    accessorKey: "cost",
-    header: () => <div className="text-right">ကုန်ကျစရိတ်</div>,
-    cell: ({ row }) => <div className="text-right tabular-nums">{formatKyat(row.original.cost)}</div>,
-  },
-  {
-    accessorKey: "profit",
-    header: () => <div className="text-right">အရောင်းအမြတ်</div>,
-    cell: ({ row }) => (
-      <div className={`text-right font-medium tabular-nums ${row.original.profit < 0 ? "text-red-700 dark:text-red-300" : "text-blue-700 dark:text-blue-300"}`}>
-        {formatKyat(row.original.profit)}
-      </div>
-    ),
+    id: "amount",
+    header: () => <div className="text-right">တန်ဖိုး</div>,
+    cell: ({ row }) => row.original.items.map(({ amount }, index) => (
+      <div key={index} className="whitespace-nowrap text-right leading-6 tabular-nums">{formatKyat(amount)}</div>
+    )),
   },
 ];
 
@@ -171,7 +161,7 @@ export default function SalesTable({ rows, today }: { rows: SalesRow[]; today: s
       <DataTable
         columns={selectableColumns}
         data={visibleRows}
-        searchKey="customer"
+        searchKey="products"
         searchPlaceholder="ဝယ်သူ သို့မဟုတ် ပစ္စည်းအမည်ဖြင့် ရှာရန်"
         theme="products"
       />
