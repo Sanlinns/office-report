@@ -44,7 +44,7 @@ const columns: ColumnDef<SalesRow>[] = [
   {
     accessorKey: "products",
     header: "ပစ္စည်းများ",
-    cell: ({ row }) => <div className="w-60 whitespace-normal">{row.original.products}</div>,
+    cell: ({ row }) => <div className="w-60 whitespace-pre-line break-words">{row.original.products}</div>,
   },
   {
     accessorKey: "total",
@@ -123,7 +123,7 @@ export default function SalesTable({ rows, today }: { rows: SalesRow[]; today: s
         );
       },
       cell: ({ row }) => (
-        <input type="checkbox" aria-label={`${row.original.date} · ${row.original.products} ရွေးရန်`}
+        <input type="checkbox" aria-label={`${row.original.date} · ${row.original.products.replaceAll("\n", ", ")} ရွေးရန်`}
           disabled={pending} checked={selected.includes(row.original.id)}
           onChange={(event) => select([row.original.id], event.target.checked)} />
       ),
