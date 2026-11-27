@@ -1,126 +1,24 @@
-// import BarBox from "@/components/dashboard/chart/BarBox";
-// import BigChartBox from "@/components/dashboard/chart/BigChartBox";
-// import ChartBox from "@/components/dashboard/chart/ChartBox";
-// import DailyTrendChart from "@/components/dashboard/chart/DailyTrendChart";
-// import PieChartBox from "@/components/dashboard/chart/PieChartBox";
-// import { fetchIncomesTotal, totalOutcometest } from "@/lib/data/alldata";
+
+// import { headers } from "next/headers";
+// import { redirect } from "next/navigation";
+// import OfficeReports from "@/components/dashboard/chart/OfficeReports";
+// import { auth } from "@/lib/auth";
+// import { connectToDB } from "@/lib/mongoDB/mongoDB";
 
 // export default async function ChartPage() {
-//   // ✅ DB totals
-//   const incomeTotalRaw = await fetchIncomesTotal();
-//   const outcomeTotalRaw = await totalOutcometest();
-
-//   const incomeTotal = Number(incomeTotalRaw ?? 0);
-//   const outcomeTotal = Number(outcomeTotalRaw ?? 0);
-//   const profitTotal = incomeTotal - outcomeTotal;
-
-//   // ✅ small sparkline data (demo)
-//   // မင်းအနေနဲ့ နောက်ပိုင်း DB daily aggregate နဲ့ ပြောင်းနိုင်
-//   const incomeSpark = [
-//     { name: "Sun", income: Math.round(incomeTotal * 0.12) },
-//     { name: "Mon", income: Math.round(incomeTotal * 0.14) },
-//     { name: "Tue", income: Math.round(incomeTotal * 0.13) },
-//     { name: "Wed", income: Math.round(incomeTotal * 0.16) },
-//     { name: "Thu", income: Math.round(incomeTotal * 0.15) },
-//     { name: "Fri", income: Math.round(incomeTotal * 0.17) },
-//     { name: "Sat", income: Math.round(incomeTotal * 0.13) },
-//   ];
-
-//   const outcomeSpark = [
-//     { name: "Sun", outcome: Math.round(outcomeTotal * 0.12) },
-//     { name: "Mon", outcome: Math.round(outcomeTotal * 0.14) },
-//     { name: "Tue", outcome: Math.round(outcomeTotal * 0.13) },
-//     { name: "Wed", outcome: Math.round(outcomeTotal * 0.16) },
-//     { name: "Thu", outcome: Math.round(outcomeTotal * 0.15) },
-//     { name: "Fri", outcome: Math.round(outcomeTotal * 0.17) },
-//     { name: "Sat", outcome: Math.round(outcomeTotal * 0.13) },
-//   ];
-
-//   // ✅ ChartBox props (ChartBoxConfig)
-//   const chartBoxIncome = {
-//     title: "Total Income",
-//     subtitle: "From DB (Mongo)",
-//     number: `¥ ${incomeTotal.toLocaleString()}`,
-//     percentage: 0, // (optional) မင်း daily compare ရရင် % ထည့်
-//     dataKey: "income",
-//     chartData: incomeSpark,
-//   };
-
-//   const chartBoxOutcome = {
-//     title: "Total Outcome",
-//     subtitle: "From DB (Mongo)",
-//     number: `¥ ${outcomeTotal.toLocaleString()}`,
-//     percentage: 0,
-//     dataKey: "outcome",
-//     chartData: outcomeSpark,
-//   };
-
-//   const chartBoxProfit = {
-//     title: "Profit",
-//     subtitle: "Income - Outcome",
-//     number: `¥ ${profitTotal.toLocaleString()}`,
-//     percentage: 0,
-//     dataKey: "profit",
-//     chartData: [
-//       { name: "Sun", profit: Math.round(profitTotal * 0.12) },
-//       { name: "Mon", profit: Math.round(profitTotal * 0.14) },
-//       { name: "Tue", profit: Math.round(profitTotal * 0.13) },
-//       { name: "Wed", profit: Math.round(profitTotal * 0.16) },
-//       { name: "Thu", profit: Math.round(profitTotal * 0.15) },
-//       { name: "Fri", profit: Math.round(profitTotal * 0.17) },
-//       { name: "Sat", profit: Math.round(profitTotal * 0.13) },
-//     ],
-//   };
-
-//   // demo bars
-//   const barVisit = [
-//     { name: "Jan", visit: 120 },
-//     { name: "Feb", visit: 210 },
-//     { name: "Mar", visit: 170 },
-//     { name: "Apr", visit: 260 },
-//     { name: "May", visit: 240 },
-//   ];
-//   const barRevenue = [
-//     { name: "Jan", rev: 80 },
-//     { name: "Feb", rev: 140 },
-//     { name: "Mar", rev: 120 },
-//     { name: "Apr", rev: 200 },
-//     { name: "May", rev: 190 },
-//   ];
-
-//   const barVisitMini = barVisit.map((x) => ({
-//     name: x.name,
-//     visitsMini: x.visit, // rename key
-//   }));
+//   const session = await auth.api.getSession({ headers: await headers() });
+//   if (!session?.user.id) redirect("/sign-in");
+//   await connectToDB();
 
 //   return (
-//     <div className="p-4 md:p-8">
-//       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[200px]">
-//         {/* ✅ row 1: Income + Outcome + Pie */}
-//         <div className="md:col-span-3">
-//           <ChartBox props={chartBoxIncome} />
-//         </div>
-
-//         <div className="md:col-span-3">
-//           <ChartBox props={chartBoxOutcome} />
-//         </div>
-
-//         <div className="md:col-span-6 md:row-span-2">
-//           <PieChartBox />
-//         </div>
-
-//         {/* ✅ row 2: Profit + bar */}
-//         <div className="md:col-span-3">
-//           <ChartBox props={chartBoxProfit} />
-//         </div>
-
-//         <div className="md:col-span-12 md:row-span-2">
-//           <DailyTrendChart days={30} />
-//         </div>
-//       </div>
-//     </div>
+//     <main className="space-y-4 p-4 md:p-8">
+//       <h1 className="text-2xl font-semibold">စက်ရုံ အစီရင်ခံစာ</h1>
+//       <OfficeReports ownerId={session.user.id} />
+//     </main>
 //   );
 // }
+
+
 
 
 
@@ -129,16 +27,82 @@ import { redirect } from "next/navigation";
 import OfficeReports from "@/components/dashboard/chart/OfficeReports";
 import { auth } from "@/lib/auth";
 import { connectToDB } from "@/lib/mongoDB/mongoDB";
+import {
+  ReportShare,
+  reportSections,
+  reportSectionLabels,
+} from "@/lib/mongoDB/report-share";
+import ShareForm from "./share-form";
+import { revokeReportShare } from "./share-actions";
+
+const dateFormat = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Asia/Yangon",
+});
 
 export default async function ChartPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user.id) redirect("/sign-in");
+  const ownerId = session?.user.id;
+
+  if (!ownerId) redirect("/sign-in");
+
   await connectToDB();
+
+  const links = await ReportShare.find({
+    ownerId,
+    expiresAt: { $gt: new Date() },
+  })
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <main className="space-y-4 p-4 md:p-8">
       <h1 className="text-2xl font-semibold">စက်ရုံ အစီရင်ခံစာ</h1>
-      <OfficeReports ownerId={session.user.id} />
+
+      <details className="rounded-xl border bg-card p-4">
+        <summary className="cursor-pointer font-medium">
+          Report မျှဝေရန်
+        </summary>
+
+        <div className="mt-4 space-y-4">
+          <ShareForm
+            sections={reportSections.map((id) => ({
+              id,
+              label: reportSectionLabels[id],
+            }))}
+          />
+
+          <ul className="space-y-2">
+            {links.map((link) => (
+              <li
+                key={String(link._id)}
+                className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 text-sm"
+              >
+                <span>
+                  {link.sections
+                    .map((section) => reportSectionLabels[section])
+                    .join("၊ ")}
+                  {" · "}
+                  {dateFormat.format(link.expiresAt)}
+                </span>
+
+                <form action={revokeReportShare}>
+                  <input type="hidden" name="id" value={String(link._id)} />
+                  <button
+                    type="submit"
+                    className="rounded-md border px-3 py-1 text-destructive"
+                  >
+                    Link ပြန်ပိတ်ရန်
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
+
+      <OfficeReports ownerId={ownerId} />
     </main>
   );
 }

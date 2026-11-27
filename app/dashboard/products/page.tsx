@@ -37,7 +37,7 @@ const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
 const path = "/dashboard/products";
 
 async function getOwnerId() {
-  const session = await auth.api.getSession({ query: { disableCookieCache: true }, headers: await headers() });
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user.id) redirect("/sign-in");
   return session.user.id;
 }
@@ -100,10 +100,17 @@ export default async function ProductsPage({
   const { status } = await searchParams;
   await connectToDB();
   const [products, movements, categories] = await Promise.all([
-    Product.find({ ownerId, archivedAt: null }).sort({ name: 1, code: 1 }).lean(),
+    Product.find({ ownerId, archivedAt: null }).lean(),
     inventoryMovements(ownerId),
     Category.find({ ownerId }).sort({ name: 1 }).lean(),
   ]);
+  const datedProducts = products.map((product) => ({
+    product,
+    addedAt: product.createdAt ?? product._id.getTimestamp(),
+  })).sort((a, b) =>
+    b.addedAt.getTime() - a.addedAt.getTime() ||
+    String(b.product._id).localeCompare(String(a.product._id)),
+  );
   const categoryNames = new Map(categories.map(({ _id, name }) => [String(_id), name]));
   const message = status && Object.hasOwn(messages, status)
     ? messages[status as keyof typeof messages]
@@ -185,7 +192,8 @@ export default async function ProductsPage({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ProductsTable rows={products.map((product) => ({
+          <ProductsTable rows={datedProducts.map(({ product, addedAt }) => ({
+            addedAt: addedAt.toISOString(),
             id: String(product._id),
             name: product.name,
             category: categoryNames.get(String(product.categoryId)) ?? "",

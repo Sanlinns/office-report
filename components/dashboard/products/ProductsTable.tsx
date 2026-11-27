@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/dashboard/outcome/outcom_data_table";
 
 type ProductRow = {
+  addedAt: string;
   id: string;
   name: string;
   category: string;
@@ -27,7 +28,19 @@ type ProductRow = {
 
 const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
 
+const addedDateFormat = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "short",
+  timeZone: "Asia/Yangon",
+});
+
 const columns: ColumnDef<ProductRow>[] = [
+  {
+    accessorKey: "addedAt",
+    header: "ထည့်သွင်းရက်",
+    cell: ({ row }) => <time dateTime={row.original.addedAt} className="whitespace-nowrap tabular-nums">
+      {addedDateFormat.format(new Date(row.original.addedAt))}
+    </time>,
+  },
   {
     accessorKey: "name",
     header: "ပစ္စည်းအမည်",

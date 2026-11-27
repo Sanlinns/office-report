@@ -1,6 +1,7 @@
 import { deleteModel, Schema, model, models, type Model, type Types } from "mongoose";
 
 interface Product {
+  createdAt?: Date;
   ownerId: string;
   categoryId?: Types.ObjectId | null;
   code: string;

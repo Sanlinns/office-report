@@ -4,6 +4,7 @@
 // import Link from "next/link";
 
 // import {
+//   useCallback,
 //   useEffect,
 //   useId,
 //   useMemo,
@@ -58,9 +59,9 @@
 // };
 
 // type PiePoint = {
+//   id?: string;
 //   name: string;
 //   value: number;
-//   id?: string;
 // };
 
 // type PieChartBoxProps = {
@@ -72,7 +73,8 @@
 // };
 
 // /* =========================================
-//    Original Pie Colors
+//    Original Pie Chart Colors
+//    မူလအရောင်များ မပြောင်းပါ
 // ========================================= */
 
 // const PIE_COLORS = [
@@ -219,7 +221,7 @@
 //             : "Shop"}
 //       </div>
 
-//       <div className="text-sm font-semibold">
+//       <div className="text-sm font-semibold text-foreground">
 //         {name}
 //       </div>
 
@@ -231,7 +233,7 @@
 //             : "Outcome"}
 //       </div>
 
-//       <div className="text-sm font-semibold tabular-nums">
+//       <div className="text-sm font-semibold tabular-nums text-foreground">
 //         {salesMode || budgetMode
 //           ? formatKyat(value)
 //           : value.toLocaleString()}
@@ -245,121 +247,7 @@
 // }
 
 // /* =========================================
-//    Liquid Gradient Definitions
-// ========================================= */
-
-// function LiquidGradients({
-//   id,
-//   animated,
-// }: {
-//   id: string;
-//   animated: boolean;
-// }) {
-//   return (
-//     <defs>
-//       {PIE_COLORS.map((color, index) => {
-//         const direction =
-//           index % 2 === 0 ? 1 : -1;
-
-//         return (
-//           <linearGradient
-//             key={index}
-//             id={`${id}-liquid-${index}`}
-//             x1="0%"
-//             y1="0%"
-//             x2="100%"
-//             y2="100%"
-//           >
-//             {/* Deep Color */}
-
-//             <stop
-//               offset="0%"
-//               stopColor={`color-mix(
-//                 in srgb,
-//                 ${color} 65%,
-//                 #000000
-//               )`}
-//             />
-
-//             {/* Original Color */}
-
-//             <stop
-//               offset="30%"
-//               stopColor={color}
-//             />
-
-//             {/* Soft Highlight */}
-
-//             <stop
-//               offset="58%"
-//               stopColor={`color-mix(
-//                 in srgb,
-//                 ${color} 65%,
-//                 #ffffff
-//               )`}
-//             />
-
-//             {/* Liquid Reflection */}
-
-//             <stop
-//               offset="75%"
-//               stopColor={`color-mix(
-//                 in srgb,
-//                 ${color} 80%,
-//                 #ffffff
-//               )`}
-//             />
-
-//             {/* Original Color */}
-
-//             <stop
-//               offset="100%"
-//               stopColor={color}
-//             />
-
-//             {/* Liquid Flow Animation */}
-
-//             {animated && (
-//               <animateTransform
-//                 attributeName="gradientTransform"
-//                 type="rotate"
-//                 values={`
-//                   0 0.5 0.5;
-//                   ${25 * direction} 0.5 0.5;
-//                   ${-10 * direction} 0.5 0.5;
-//                   ${3 * direction} 0.5 0.5;
-//                   0 0.5 0.5;
-//                   0 0.5 0.5
-//                 `}
-//                 keyTimes="
-//                   0;
-//                   0.12;
-//                   0.22;
-//                   0.32;
-//                   0.4;
-//                   1
-//                 "
-//                 calcMode="spline"
-//                 keySplines="
-//                   0.42 0 0.58 1;
-//                   0.42 0 0.58 1;
-//                   0.42 0 0.58 1;
-//                   0.42 0 0.58 1;
-//                   0.42 0 0.58 1
-//                 "
-//                 dur="5s"
-//                 repeatCount="indefinite"
-//               />
-//             )}
-//           </linearGradient>
-//         );
-//       })}
-//     </defs>
-//   );
-// }
-
-// /* =========================================
-//    Pie Chart Box
+//    Main Pie Chart Component
 // ========================================= */
 
 // export default function PieChartBox({
@@ -373,6 +261,10 @@
 //     ""
 //   )}`;
 
+//   /* =======================================
+//      States
+//   ======================================= */
+
 //   const [range, setRange] =
 //     useState<SalesRange>(30);
 
@@ -383,6 +275,9 @@
 //     useState<OutcomeRow[]>([]);
 
 //   const [activeIndex, setActiveIndex] =
+//     useState<number | null>(null);
+
+//   const [selectedIndex, setSelectedIndex] =
 //     useState<number | null>(null);
 
 //   const [reduceMotion, setReduceMotion] =
@@ -411,7 +306,7 @@
 //       : niceCompact(value);
 
 //   /* =======================================
-//      Reduced Motion / Print Preference
+//      Accessibility & Reduced Motion
 //   ======================================= */
 
 //   useEffect(() => {
@@ -458,50 +353,60 @@
 //      Fetch Outcome Data
 //   ======================================= */
 
-//   const fetchOutcome = async () => {
-//     setLoading(true);
+//   const fetchOutcome = useCallback(
+//     async () => {
+//       setLoading(true);
 
-//     try {
-//       const response = await fetch(
-//         "/api/outcome",
-//         {
-//           cache: "no-store",
-//         }
-//       );
-
-//       if (!response.ok) {
-//         throw new Error(
-//           `Request failed: ${response.status}`
+//       try {
+//         const response = await fetch(
+//           "/api/outcome",
+//           {
+//             cache: "no-store",
+//           }
 //         );
+
+//         if (!response.ok) {
+//           throw new Error(
+//             `Request failed: ${response.status}`
+//           );
+//         }
+
+//         const json = await response.json();
+
+//         setOutcomes(
+//           Array.isArray(json)
+//             ? json
+//             : []
+//         );
+
+//         setActiveIndex(null);
+//         setSelectedIndex(null);
+
+//       } catch (error) {
+//         console.error(
+//           "Could not load outcomes",
+//           error
+//         );
+
+//       } finally {
+//         setLoading(false);
 //       }
-
-//       const json = await response.json();
-
-//       setOutcomes(
-//         Array.isArray(json)
-//           ? json
-//           : []
-//       );
-
-//       setActiveIndex(null);
-//     } catch (error) {
-//       console.error(
-//         "Could not load outcomes",
-//         error
-//       );
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+//     },
+//     []
+//   );
 
 //   useEffect(() => {
 //     if (!salesMode && !budgetMode) {
 //       void fetchOutcome();
 //     }
-//   }, [salesMode, budgetMode]);
+//   }, [
+//     salesMode,
+//     budgetMode,
+//     fetchOutcome,
+//   ]);
 
 //   /* =======================================
-//      Chart Data
+//      Real Chart Data
 //   ======================================= */
 
 //   const data = useMemo<PiePoint[]>(() => {
@@ -509,13 +414,16 @@
 //       return [
 //         {
 //           name: "သုံးစွဲပြီးငွေ",
+
 //           value: Math.min(
 //             budget?.spent ?? 0,
 //             budget?.funds ?? 0
 //           ),
 //         },
+
 //         {
 //           name: "လက်ကျန်ငွေ",
+
 //           value:
 //             (budget?.funds ?? 0) -
 //             (budget?.spent ?? 0),
@@ -537,6 +445,7 @@
 //     }
 
 //     return sumOutcomeByShop(outcomes);
+
 //   }, [
 //     budget,
 //     budgetMode,
@@ -544,6 +453,10 @@
 //     range,
 //     sales,
 //   ]);
+
+//   /* =======================================
+//      Total & Top Products
+//   ======================================= */
 
 //   const total = useMemo(
 //     () =>
@@ -560,15 +473,45 @@
 //     [data]
 //   );
 
+//   /* =======================================
+//      Active Product
+
+//      Hover = temporary selection
+//      Click = persistent selection
+//   ======================================= */
+
+//   const currentIndex =
+//     activeIndex ?? selectedIndex;
+
 //   const active =
-//     activeIndex !== null
-//       ? data[activeIndex] ?? null
+//     currentIndex !== null
+//       ? data[currentIndex] ?? null
 //       : null;
 
 //   const activePercentage =
 //     active && total > 0
 //       ? (active.value / total) * 100
 //       : null;
+
+//   /* =======================================
+//      Center Card Animation
+
+//      Sales Chart only
+//      Stop when product is selected
+//   ======================================= */
+
+//   const animateCenterCard =
+//     liquidMode &&
+//     !active &&
+//     !reduceMotion;
+
+//   function toggleProduct(index: number) {
+//     setSelectedIndex((previous) =>
+//       previous === index
+//         ? null
+//         : index
+//     );
+//   }
 
 //   /* =======================================
 //      Render
@@ -592,13 +535,16 @@
 //     >
 //       <div className="relative rounded-2xl">
 
-//         {/* Background Effects */}
+//         {/* =================================
+//             Background Glow
+//         ================================= */}
 
 //         <div
 //           className="
 //             pointer-events-none
 //             absolute inset-0
-//             overflow-hidden rounded-2xl
+//             overflow-hidden
+//             rounded-2xl
 //           "
 //         >
 //           <div
@@ -620,9 +566,9 @@
 //           />
 //         </div>
 
-//         {/* ===============================
+//         {/* =================================
 //             Card Header
-//         =============================== */}
+//         ================================= */}
 
 //         <CardHeader
 //           className="
@@ -651,7 +597,9 @@
 
 //           </div>
 
-//           {/* Budget Link */}
+//           {/* ===============================
+//               Header Actions
+//           =============================== */}
 
 //           {budgetMode ? (
 
@@ -666,8 +614,6 @@
 //             </Link>
 
 //           ) : salesMode ? (
-
-//             /* Date Range Filter */
 
 //             <div
 //               role="group"
@@ -684,10 +630,13 @@
 //                       ? "default"
 //                       : "outline"
 //                   }
-//                   aria-pressed={range === days}
+//                   aria-pressed={
+//                     range === days
+//                   }
 //                   onClick={() => {
 //                     setRange(days);
 //                     setActiveIndex(null);
+//                     setSelectedIndex(null);
 //                   }}
 //                 >
 //                   {days} ရက်
@@ -696,8 +645,6 @@
 //             </div>
 
 //           ) : (
-
-//             /* Refresh Button */
 
 //             <Button
 //               variant="outline"
@@ -720,9 +667,9 @@
 //           )}
 //         </CardHeader>
 
-//         {/* ===============================
+//         {/* =================================
 //             Card Content
-//         =============================== */}
+//         ================================= */}
 
 //         <CardContent className="relative min-w-0 pt-2">
 
@@ -733,9 +680,9 @@
 //             "
 //           >
 
-//             {/* ===========================
-//                 LEFT — Liquid Pie Chart
-//             =========================== */}
+//             {/* =============================
+//                 LEFT — Pie Chart
+//             ============================= */}
 
 //             <div className="min-w-0">
 
@@ -758,7 +705,12 @@
 
 //                   <>
 
-//                     {/* Center Label */}
+//                     {/* =====================
+//                         Center Revenue Card
+
+//                         Card တစ်ခုလုံး
+//                         Fade Out / Fade In
+//                     ===================== */}
 
 //                     <div
 //                       className="
@@ -768,9 +720,8 @@
 //                         place-items-center
 //                       "
 //                     >
-
 //                       <div
-//                         className="
+//                         className={`
 //                           max-w-[48%]
 //                           rounded-xl
 //                           border border-border/60
@@ -779,14 +730,29 @@
 //                           text-center
 //                           shadow-sm
 //                           backdrop-blur
-//                         "
+//                           ${
+//                             animateCenterCard
+//                               ? "liquid-pie-center-active"
+//                               : ""
+//                           }
+//                         `}
 //                       >
 
-//                         <div className="truncate text-[11px] text-muted-foreground">
+//                         {/* Center Title */}
+
+//                         <div
+//                           className="
+//                             truncate
+//                             text-[11px]
+//                             text-muted-foreground
+//                           "
+//                         >
 //                           {active
 //                             ? active.name
 //                             : totalLabel}
 //                         </div>
+
+//                         {/* Revenue Amount */}
 
 //                         <div
 //                           className="
@@ -803,21 +769,28 @@
 //                           )}
 //                         </div>
 
+//                         {/* Percentage */}
+
 //                         {activePercentage !==
 //                           null && (
+
 //                           <div className="mt-1 text-xs text-muted-foreground">
+
 //                             {activePercentage.toFixed(
 //                               1
 //                             )}
 //                             %
+
 //                           </div>
+
 //                         )}
 
 //                       </div>
-
 //                     </div>
 
-//                     {/* Recharts Pie */}
+//                     {/* =====================
+//                         Original Pie Chart
+//                     ===================== */}
 
 //                     <ResponsiveContainer
 //                       width="100%"
@@ -827,18 +800,96 @@
 
 //                       <PieChart>
 
-//                         {/* Animated Gradients */}
+//                         {/* =================
+//                             Original Liquid
+//                             Gradient Colors
+//                         ================= */}
 
 //                         {liquidMode && (
-//                           <LiquidGradients
-//                             id={gradientId}
-//                             animated={
-//                               !reduceMotion
-//                             }
-//                           />
+
+//                           <defs>
+
+//                             {PIE_COLORS.map(
+//                               (color, index) => {
+//                                 const direction =
+//                                   index % 2 === 0
+//                                     ? 1
+//                                     : -1;
+
+//                                 return (
+//                                   <linearGradient
+//                                     key={index}
+//                                     id={`${gradientId}-liquid-${index}`}
+//                                     x1="0%"
+//                                     y1="0%"
+//                                     x2="100%"
+//                                     y2="100%"
+//                                   >
+
+//                                     <stop
+//                                       offset="0%"
+//                                       stopColor={`color-mix(
+//                                         in srgb,
+//                                         ${color} 65%,
+//                                         #000000
+//                                       )`}
+//                                     />
+
+//                                     <stop
+//                                       offset="30%"
+//                                       stopColor={color}
+//                                     />
+
+//                                     <stop
+//                                       offset="58%"
+//                                       stopColor={`color-mix(
+//                                         in srgb,
+//                                         ${color} 65%,
+//                                         #ffffff
+//                                       )`}
+//                                     />
+
+//                                     <stop
+//                                       offset="75%"
+//                                       stopColor={`color-mix(
+//                                         in srgb,
+//                                         ${color} 80%,
+//                                         #ffffff
+//                                       )`}
+//                                     />
+
+//                                     <stop
+//                                       offset="100%"
+//                                       stopColor={color}
+//                                     />
+
+//                                     {!reduceMotion && (
+
+//                                       <animateTransform
+//                                         attributeName="gradientTransform"
+//                                         type="rotate"
+//                                         values={`0 .5 .5;${25 * direction} .5 .5;${-10 * direction} .5 .5;${3 * direction} .5 .5;0 .5 .5;0 .5 .5`}
+//                                         keyTimes="0;0.12;0.22;0.32;0.4;1"
+//                                         calcMode="spline"
+//                                         keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+//                                         dur="5s"
+//                                         repeatCount="indefinite"
+//                                       />
+
+//                                     )}
+
+//                                   </linearGradient>
+//                                 );
+//                               }
+//                             )}
+
+//                           </defs>
+
 //                         )}
 
-//                         {/* Tooltip */}
+//                         {/* =================
+//                             Tooltip
+//                         ================= */}
 
 //                         <Tooltip
 //                           content={
@@ -861,7 +912,12 @@
 //                           }}
 //                         />
 
-//                         {/* Pie Slices */}
+//                         {/* =================
+//                             Pie Slices
+
+//                             မူလ Size နှင့်
+//                             Color မပြောင်းပါ
+//                         ================= */}
 
 //                         <Pie
 //                           className={
@@ -880,22 +936,17 @@
 //                           stroke="var(--background)"
 //                           strokeWidth={2}
 //                           isAnimationActive={false}
-//                           onMouseLeave={() =>
-//                             setActiveIndex(null)
-//                           }
 //                           onMouseEnter={(
 //                             _,
 //                             index
 //                           ) =>
 //                             setActiveIndex(index)
 //                           }
+//                           onMouseLeave={() =>
+//                             setActiveIndex(null)
+//                           }
 //                           onClick={(_, index) =>
-//                             setActiveIndex(
-//                               (previous) =>
-//                                 previous === index
-//                                   ? null
-//                                   : index
-//                             )
+//                             toggleProduct(index)
 //                           }
 //                         >
 
@@ -922,10 +973,10 @@
 //                                       : color
 //                                   }
 //                                   opacity={
-//                                     activeIndex ===
+//                                     currentIndex ===
 //                                     null
 //                                       ? 0.98
-//                                       : activeIndex ===
+//                                       : currentIndex ===
 //                                           index
 //                                         ? 1
 //                                         : 0.4
@@ -934,13 +985,14 @@
 //                                     filter: `drop-shadow(
 //                                       0 2px
 //                                       ${
-//                                         activeIndex ===
+//                                         currentIndex ===
 //                                         index
 //                                           ? 5
 //                                           : 2
 //                                       }px
 //                                       ${color}
 //                                     )`,
+
 //                                     transition:
 //                                       "opacity 200ms ease",
 //                                   }}
@@ -959,23 +1011,29 @@
 
 //                 ) : (
 
-//                   /* Empty State */
+//                   /* =======================
+//                      Empty State
+//                   ======================= */
 
 //                   <div className="grid h-full place-items-center text-center">
+
 //                     <p className="text-sm text-muted-foreground">
+
 //                       {salesMode
 //                         ? "ဒီကာလမှာ ရောင်းရငွေ မရှိသေးပါ။"
 //                         : "ပြရန် စာရင်းမရှိသေးပါ။"}
+
 //                     </p>
+
 //                   </div>
 
 //                 )}
 
 //               </div>
 
-//               {/* =========================
-//                   Custom Color Legend
-//               ========================= */}
+//               {/* ===========================
+//                   Original Color Legend
+//               =========================== */}
 
 //               <div
 //                 className="
@@ -986,6 +1044,7 @@
 //                 "
 //               >
 //                 {data.map((point, index) => (
+
 //                   <button
 //                     key={
 //                       point.id ??
@@ -993,7 +1052,7 @@
 //                     }
 //                     type="button"
 //                     aria-pressed={
-//                       activeIndex === index
+//                       selectedIndex === index
 //                     }
 //                     onMouseEnter={() =>
 //                       setActiveIndex(index)
@@ -1008,12 +1067,7 @@
 //                       setActiveIndex(null)
 //                     }
 //                     onClick={() =>
-//                       setActiveIndex(
-//                         (previous) =>
-//                           previous === index
-//                             ? null
-//                             : index
-//                       )
+//                       toggleProduct(index)
 //                     }
 //                     className="
 //                       flex items-center
@@ -1025,6 +1079,7 @@
 //                       hover:text-foreground
 //                     "
 //                   >
+
 //                     <span
 //                       className="
 //                         size-2.5
@@ -1043,14 +1098,34 @@
 //                     {point.name}
 
 //                   </button>
+
 //                 ))}
 //               </div>
 
+//               {/* Clear Product Selection */}
+
+//               {selectedIndex !== null && (
+//                 <div className="mt-2 flex justify-center">
+//                   <Button
+//                     type="button"
+//                     variant="ghost"
+//                     size="sm"
+//                     className="text-xs text-muted-foreground"
+//                     onClick={() => {
+//                       setSelectedIndex(null);
+//                       setActiveIndex(null);
+//                     }}
+//                   >
+//                     စုစုပေါင်း ပြန်ကြည့်ရန်
+//                   </Button>
+//                 </div>
+//               )}
+
 //             </div>
 
-//             {/* ===========================
+//             {/* =============================
 //                 RIGHT — Budget Summary
-//             =========================== */}
+//             ============================= */}
 
 //             {budgetMode ? (
 
@@ -1069,21 +1144,26 @@
 //                       label: "သုံးစွဲပြီးငွေ",
 //                       value: budget.spent,
 //                     },
+
 //                     {
 //                       label: "လက်ကျန်ငွေ",
 //                       value:
 //                         budget.funds -
 //                         budget.spent,
 //                     },
+
 //                   ].map(
 //                     ({ label, value }) => (
+
 //                       <div
 //                         key={label}
 //                         className="
 //                           flex flex-wrap
-//                           justify-between gap-2
+//                           justify-between
+//                           gap-2
 //                         "
 //                       >
+
 //                         <dt>{label}</dt>
 
 //                         <dd
@@ -1093,9 +1173,13 @@
 //                               : "font-semibold"
 //                           }
 //                         >
+
 //                           {formatKyat(value)}
+
 //                         </dd>
+
 //                       </div>
+
 //                     )
 //                   )
 
@@ -1111,9 +1195,9 @@
 
 //             ) : (
 
-//               /* =========================
-//                  Top Products
-//               ========================= */
+//               /* ===========================
+//                  Top Products List
+//               =========================== */
 
 //               <div
 //                 className="
@@ -1128,16 +1212,24 @@
 //                 <div className="flex flex-wrap items-center justify-between gap-2">
 
 //                   <div className="text-xs font-medium text-muted-foreground">
+
 //                     {salesMode
 //                       ? "ရောင်းရငွေအများဆုံး ပစ္စည်းများ"
 //                       : "Top Shops"}
+
 //                   </div>
 
 //                   <div className="text-xs tabular-nums text-muted-foreground">
+
 //                     {displayValue(total)}
+
 //                   </div>
 
 //                 </div>
+
+//                 {/* =========================
+//                     Top Product Rows
+//                 ========================= */}
 
 //                 <div
 //                   className="
@@ -1150,19 +1242,21 @@
 //                   {top.length === 0 ? (
 
 //                     <div className="text-sm text-muted-foreground">
+
 //                       {salesMode
 //                         ? "ဒီကာလမှာ ရောင်းရငွေ မရှိသေးပါ။"
 //                         : "No data"}
+
 //                     </div>
 
 //                   ) : (
 
 //                     top.map((point, index) => {
+
 //                       const percentage =
 //                         total > 0
 //                           ? (point.value /
-//                               total) *
-//                             100
+//                               total) * 100
 //                           : 0;
 
 //                       const color =
@@ -1172,16 +1266,22 @@
 //                         ];
 
 //                       return (
-//                         <div
+//                         <button
 //                           key={
 //                             point.id ??
 //                             point.name
 //                           }
+//                           type="button"
+//                           aria-pressed={
+//                             selectedIndex === index
+//                           }
 //                           className="
+//                             block w-full
 //                             rounded-xl
 //                             border border-border/50
 //                             bg-background/60
-//                             p-2 transition
+//                             p-2 text-left
+//                             transition
 //                             hover:bg-background/80
 //                           "
 //                           onMouseEnter={() =>
@@ -1190,6 +1290,15 @@
 //                           onMouseLeave={() =>
 //                             setActiveIndex(null)
 //                           }
+//                           onFocus={() =>
+//                             setActiveIndex(index)
+//                           }
+//                           onBlur={() =>
+//                             setActiveIndex(null)
+//                           }
+//                           onClick={() =>
+//                             toggleProduct(index)
+//                           }
 //                         >
 
 //                           <div className="flex items-center justify-between gap-2">
@@ -1197,22 +1306,28 @@
 //                             <div className="min-w-0">
 
 //                               <div className="truncate text-sm font-medium">
+
 //                                 {point.name}
+
 //                               </div>
 
 //                               <div className="text-[11px] tabular-nums text-muted-foreground">
+
 //                                 {percentage.toFixed(
 //                                   1
 //                                 )}
 //                                 %
+
 //                               </div>
 
 //                             </div>
 
 //                             <div className="text-sm font-semibold tabular-nums">
+
 //                               {displayValue(
 //                                 point.value
 //                               )}
+
 //                             </div>
 
 //                           </div>
@@ -1222,14 +1337,17 @@
 //                           <div
 //                             className="
 //                               mt-2 h-1.5
-//                               w-full overflow-hidden
-//                               rounded-full bg-muted
+//                               w-full
+//                               overflow-hidden
+//                               rounded-full
+//                               bg-muted
 //                             "
 //                           >
 
 //                             <div
 //                               className="
-//                                 h-full rounded-full
+//                                 h-full
+//                                 rounded-full
 //                                 transition-[width]
 //                                 duration-500
 //                               "
@@ -1241,13 +1359,14 @@
 //                                     percentage
 //                                   )
 //                                 )}%`,
+
 //                                 background: color,
 //                               }}
 //                             />
 
 //                           </div>
 
-//                         </div>
+//                         </button>
 //                       );
 //                     })
 
@@ -1255,23 +1374,30 @@
 
 //                 </div>
 
-//                 {/* Total Revenue */}
+//                 {/* =========================
+//                     Total Revenue
+//                 ========================= */}
 
 //                 <div
 //                   className="
 //                     mt-3 flex flex-wrap
-//                     items-center justify-between
+//                     items-center
+//                     justify-between
 //                     gap-2 text-xs
 //                     text-muted-foreground
 //                   "
 //                 >
+
 //                   <span>{totalLabel}</span>
 
 //                   <span className="font-medium tabular-nums text-foreground">
+
 //                     {salesMode
 //                       ? formatKyat(total)
 //                       : total.toLocaleString()}
+
 //                   </span>
+
 //                 </div>
 
 //               </div>
@@ -1287,9 +1413,6 @@
 //     </Card>
 //   );
 // }
-
-
-
 
 
 
@@ -1365,6 +1488,7 @@ type PiePoint = {
 };
 
 type PieChartBoxProps = {
+  detailsHref?: string;
   sales?: SalesPoint[];
   budget?: {
     funds: number;
@@ -1553,6 +1677,7 @@ function CustomTooltip({
 export default function PieChartBox({
   sales,
   budget,
+  detailsHref,
 }: PieChartBoxProps) {
   const reactId = useId();
 
@@ -1904,7 +2029,8 @@ export default function PieChartBox({
           {budgetMode ? (
 
             <Link
-              href="/dashboard/purchase-budget"
+              href={detailsHref ?? "/dashboard/purchase-budget"}
+              prefetch={false}
               className="
                 text-sm text-blue-600
                 underline dark:text-blue-400
@@ -1920,6 +2046,7 @@ export default function PieChartBox({
               aria-label="ရက်အပိုင်းအခြား"
               className="flex flex-wrap gap-1.5"
             >
+              {detailsHref && <Link href={detailsHref} prefetch={false} className="self-center text-sm text-blue-600 underline dark:text-blue-400">စာရင်းကြည့်ရန်</Link>}
               {salesRanges.map((days) => (
                 <Button
                   key={days}
@@ -2713,3 +2840,8 @@ export default function PieChartBox({
     </Card>
   );
 }
+
+
+
+
+

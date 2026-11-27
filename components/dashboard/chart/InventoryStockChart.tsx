@@ -73,3 +73,9 @@ export default function InventoryStockChart({ rows }: { rows: StockRow[] }) {
     </Card>
   );
 }
+
+
+
+
+
+
